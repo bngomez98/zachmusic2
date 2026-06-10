@@ -8,7 +8,9 @@ import Hero from './components/Hero';
 import AboutSection from './components/AboutSection';
 import MusicSection from './components/MusicSection';
 import ShowsSection from './components/ShowsSection';
+import BookingSection from './components/BookingSection';
 import GallerySection from './components/GallerySection';
+import LinktreeSection from './components/LinktreeSection';
 import Footer from './components/Footer';
 
 export default function App() {
@@ -20,7 +22,9 @@ export default function App() {
       <AboutSection />
       <MusicSection />
       <ShowsSection />
+      <BookingSection />
       <GallerySection />
+      <LinktreeSection />
       <Footer />
     </div>
   );
