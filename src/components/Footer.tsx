@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Instagram, Facebook, Mail, ArrowRight, Copyright, Coffee } from 'lucide-react';
 import { LINKS } from '../data';
 import { LegalDoc } from './LegalModal';
+import { subscribeNewsletter } from '../lib/supabase';
 
 interface Props {
   onOpenLegal: (doc: Exclude<LegalDoc, null>) => void;
@@ -20,22 +21,12 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
     setStatus('loading');
     setErrMsg('');
     try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) {
-        setStatus('success');
-        setEmail('');
-      } else {
-        setStatus('error');
-        setErrMsg(data?.error || 'Something went wrong. Try again.');
-      }
-    } catch {
+      await subscribeNewsletter({ email, source: 'footer' });
+      setStatus('success');
+      setEmail('');
+    } catch (err) {
       setStatus('error');
-      setErrMsg('Network error. Try again.');
+      setErrMsg(err instanceof Error ? err.message : 'Something went wrong. Try again.');
     }
   };
 
