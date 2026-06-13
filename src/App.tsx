@@ -7,12 +7,26 @@ import { Suspense, lazy, useState } from 'react';
 import Nav from './components/Nav';
 import Hero from './components/Hero';
 import AboutSection from './components/AboutSection';
-import MusicSection from './components/MusicSection';
-import ShowsSection from './components/ShowsSection';
-import BookingSection from './components/BookingSection';
-import GallerySection from './components/GallerySection';
-import LinktreeSection from './components/LinktreeSection';
-import Footer from './components/Footer';
+import LegalModal, { LegalDoc } from './components/LegalModal';
+import CookieConsent from './components/CookieConsent';
+import StickyBookingCTA from './components/StickyBookingCTA';
+
+const MusicSection = lazy(() => import('./components/MusicSection'));
+const ShowsSection = lazy(() => import('./components/ShowsSection'));
+const BookingSection = lazy(() => import('./components/BookingSection'));
+const GallerySection = lazy(() => import('./components/GallerySection'));
+const LinktreeSection = lazy(() => import('./components/LinktreeSection'));
+const Footer = lazy(() => import('./components/Footer'));
+const TipJar = lazy(() => import('./components/TipJar'));
+const SearchModal = lazy(() => import('./components/SearchModal'));
+
+function SectionFallback() {
+  return (
+    <div className="py-32 flex justify-center">
+      <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 export default function App() {
   const [legalDoc, setLegalDoc] = useState<LegalDoc>(null);
@@ -32,12 +46,37 @@ export default function App() {
       <Nav onOpenSearch={() => setSearchOpen(true)} onOpenTip={() => setTipOpen(true)} />
       <Hero />
       <AboutSection />
-      <MusicSection />
-      <ShowsSection />
-      <BookingSection />
-      <GallerySection />
-      <LinktreeSection />
-      <Footer />
+      <Suspense fallback={<SectionFallback />}>
+        <MusicSection />
+        <ShowsSection />
+        <BookingSection />
+        <GallerySection />
+        <LinktreeSection />
+        <Footer
+          onOpenLegal={(d) => setLegalDoc(d)}
+          onOpenTip={() => setTipOpen(true)}
+          onOpenConsent={openConsent}
+        />
+      </Suspense>
+
+      <LegalModal
+        doc={legalDoc}
+        onClose={() => setLegalDoc(null)}
+        onOpenConsent={openConsent}
+      />
+
+      <Suspense fallback={null}>
+        <TipJar open={tipOpen} onClose={() => setTipOpen(false)} />
+        <SearchModal
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          onOpenLegal={(d) => setLegalDoc(d)}
+          onOpenTip={() => setTipOpen(true)}
+        />
+      </Suspense>
+
+      <CookieConsent onOpenPolicy={() => setLegalDoc('cookies')} />
+      <StickyBookingCTA />
     </div>
   );
 }

@@ -1,5 +1,10 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+export const isSupabaseConfigured = (): boolean =>
+  Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) ||
   'https://ihnebngdsnhyniaskxiq.supabase.co';
 
@@ -10,6 +15,11 @@ let client: SupabaseClient | null = null;
 
 export function supabase(): SupabaseClient {
   if (!client) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      throw new Error(
+        'This form is temporarily unavailable. Please email mgmt@zacharywalkermusic.com.',
+      );
+    }
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: { headers: { 'x-zw-source': 'web' } },
@@ -32,6 +42,7 @@ export interface BookingArgs {
   email: string;
   phone?: string;
   eventType?: string;
+  eventDate: string;
   eventDate?: string;
   venue?: string;
   location?: string;

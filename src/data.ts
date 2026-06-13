@@ -3,6 +3,13 @@ export const LINKS = {
   facebook: 'https://www.facebook.com/profile.php?id=61565838372447',
   facebookEvent: 'https://www.facebook.com/events/936053559031406/',
   facebookMusicPage: 'https://www.facebook.com/p/Topcityzachary-61565838372447/',
+  tiktok: 'https://www.tiktok.com/@fullmetalzcw',
+  youtube: 'https://www.youtube.com/@fullmetalzcw',
+  twitch: 'https://www.twitch.tv/fullmetalzcw',
+  spotify: 'https://open.spotify.com/artist/fullmetalzcw',
+  paypal: 'https://www.paypal.com/paypalme/fullmetalzcw',
+  cashapp: 'https://cash.app/$fullmetalzcw',
+  venmo: 'https://venmo.com/u/fullmetalzcw',
 };
 
 export const SHOWS = [
