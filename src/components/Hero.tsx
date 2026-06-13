@@ -1,28 +1,78 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { Play, ChevronDown, Volume2, VolumeX } from 'lucide-react';
+import posterImg from '../assets/images/regenerated_image_1781019033978.jpg';
 
 export default function Hero() {
   const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 1000], [0, 350]);
+  const y = useTransform(scrollY, [0, 1000], [0, 280]);
   const opacity = useTransform(scrollY, [0, 600], [1, 0]);
   const [isMuted, setIsMuted] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.readyState >= 2) setVideoReady(true);
+    const onCanPlay = () => setVideoReady(true);
+    v.addEventListener('canplay', onCanPlay);
+
+    // Pause video when off-screen to save resources/bandwidth
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!videoRef.current) return;
+        if (entry.isIntersecting) {
+          videoRef.current.play().catch(() => {});
+        } else {
+          videoRef.current.pause();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    io.observe(v);
+
+    return () => {
+      v.removeEventListener('canplay', onCanPlay);
+      io.disconnect();
+    };
+  }, []);
 
   return (
     <section className="relative w-full h-screen h-[100svh] flex flex-col justify-between overflow-hidden bg-base">
       {/* Background Media */}
       <motion.div className="absolute inset-0 z-0 bg-black" style={{ y, opacity }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-base/90 via-base/20 to-base/90 z-20 pointer-events-none" />
-        <div className="absolute inset-0 bg-base/40 z-10 pointer-events-none" />
-        <video 
-          autoPlay 
-          muted={isMuted} 
-          loop 
+        {/* Cinematic gradients */}
+        <div className="absolute inset-0 bg-gradient-to-t from-base via-base/30 to-base/80 z-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-base/60 via-transparent to-base/40 z-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-base/30 z-10 pointer-events-none" />
+
+        {/* Poster image shown until video is ready, prevents flash of black */}
+        <img
+          src={posterImg}
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoReady ? 'opacity-0' : 'opacity-60'}`}
+        />
+
+        <motion.video
+          ref={videoRef}
+          autoPlay
+          muted={isMuted}
+          loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover scale-105 opacity-60 mix-blend-screen"
+          preload="metadata"
+          poster={posterImg}
+          disablePictureInPicture
+          controlsList="nodownload noremoteplayback"
+          onContextMenu={(e) => e.preventDefault()}
+          initial={{ scale: 1.15 }}
+          animate={{ scale: 1.05 }}
+          transition={{ duration: 18, ease: 'easeOut' }}
+          className={`absolute inset-0 w-full h-full object-cover mix-blend-screen transition-opacity duration-[1500ms] ${videoReady ? 'opacity-60' : 'opacity-0'}`}
         >
           <source src="/highlight.mp4" type="video/mp4" />
-        </video>
+        </motion.video>
       </motion.div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col justify-between h-full pt-32 pb-24">
@@ -36,7 +86,7 @@ export default function Hero() {
             Singer-Songwriter — Topeka, KS
           </span>
         </motion.div>
-        
+
         <div className="flex flex-col relative z-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -52,7 +102,7 @@ export default function Hero() {
             </h1>
           </motion.div>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
@@ -61,7 +111,7 @@ export default function Hero() {
             Acoustic covers and original songs.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
@@ -75,7 +125,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
@@ -96,8 +146,8 @@ export default function Hero() {
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1 }}
         onClick={() => setIsMuted(!isMuted)}
-        className="absolute bottom-8 right-6 lg:right-12 z-30 p-3 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white/70 hover:bg-black/40 hover:text-white transition-all cursor-pointer"
-        aria-label={isMuted ? "Unmute video" : "Mute video"}
+        className="absolute bottom-8 right-6 lg:right-12 z-30 p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white/70 hover:bg-black/50 hover:text-white hover:border-accent/60 transition-all cursor-pointer"
+        aria-label={isMuted ? 'Unmute video' : 'Mute video'}
       >
         {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
       </motion.button>
