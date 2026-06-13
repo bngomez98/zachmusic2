@@ -13,7 +13,7 @@ import {
   Clock,
   Shield,
 } from 'lucide-react';
-import { submitBooking } from '../lib/supabase';
+import { submitBooking, isEmail } from '../lib/supabase';
 
 interface FormState {
   name: string;
@@ -64,7 +64,7 @@ export default function BookingSection() {
 
   const validate = (): string | null => {
     if (!form.name.trim()) return 'Please enter your name.';
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return 'Please enter a valid email.';
+    if (!isEmail(form.email)) return 'Please enter a valid email.';
     if (!form.eventDate) return 'Please select a tentative event date.';
     if (!form.message.trim()) return 'Please include a brief message about your event.';
     if (!form.consent) return 'Please agree to the privacy policy to continue.';

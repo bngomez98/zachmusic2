@@ -9,11 +9,13 @@ import Hero from './components/Hero';
 import AboutSection from './components/AboutSection';
 import LegalModal, { LegalDoc } from './components/LegalModal';
 import CookieConsent from './components/CookieConsent';
+import StickyBookingCTA from './components/StickyBookingCTA';
 
 const MusicSection = lazy(() => import('./components/MusicSection'));
 const ShowsSection = lazy(() => import('./components/ShowsSection'));
 const BookingSection = lazy(() => import('./components/BookingSection'));
 const GallerySection = lazy(() => import('./components/GallerySection'));
+const LinktreeSection = lazy(() => import('./components/LinktreeSection'));
 const Footer = lazy(() => import('./components/Footer'));
 const TipJar = lazy(() => import('./components/TipJar'));
 const SearchModal = lazy(() => import('./components/SearchModal'));
@@ -49,6 +51,7 @@ export default function App() {
         <ShowsSection />
         <BookingSection />
         <GallerySection />
+        <LinktreeSection />
         <Footer
           onOpenLegal={(d) => setLegalDoc(d)}
           onOpenTip={() => setTipOpen(true)}
@@ -73,6 +76,7 @@ export default function App() {
       </Suspense>
 
       <CookieConsent onOpenPolicy={() => setLegalDoc('cookies')} />
+      <StickyBookingCTA />
     </div>
   );
 }
