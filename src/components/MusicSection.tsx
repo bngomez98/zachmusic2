@@ -29,7 +29,7 @@ const SONG_LYRICS: Record<number, LyricLine[]> = {
   ]
 };
 
-import audioUrl from '../assets/audio/loveandmadness.mp3';
+const audioUrl = '/loveandmadness.mp3';
 
 export default function MusicSection() {
   const [activeTrack, setActiveTrack] = useState<number | null>(null);
@@ -110,33 +110,33 @@ export default function MusicSection() {
   };
 
   const handleTimeUpdate = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || isNaN(audioRef.current.duration)) return;
     const actualCurrent = audioRef.current.currentTime;
     if (actualCurrent < TIME_OFFSET && isPlaying) {
       audioRef.current.currentTime = TIME_OFFSET;
       return;
     }
     const current = Math.max(0, actualCurrent - TIME_OFFSET);
-    const dur = Math.max(1, (audioRef.current.duration || 1) - TIME_OFFSET);
+    const dur = Math.max(1, audioRef.current.duration - TIME_OFFSET);
     setCurrentTime(current);
     setDuration(dur);
     setProgress((current / dur) * 100);
   };
 
   const handleProgress = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || isNaN(audioRef.current.duration)) return;
     const buf = audioRef.current.buffered;
     if (buf.length > 0) {
       const end = buf.end(buf.length - 1);
-      const dur = Math.max(1, (audioRef.current.duration || 1) - TIME_OFFSET);
+      const dur = Math.max(1, audioRef.current.duration - TIME_OFFSET);
       const adjusted = Math.max(0, end - TIME_OFFSET);
       setBufferedEnd((adjusted / dur) * 100);
     }
   };
 
   const seekTo = (percentage: number) => {
-    if (!audioRef.current) return;
-    const dur = Math.max(1, (audioRef.current.duration || 1) - TIME_OFFSET);
+    if (!audioRef.current || isNaN(audioRef.current.duration)) return;
+    const dur = Math.max(1, audioRef.current.duration - TIME_OFFSET);
     audioRef.current.currentTime = TIME_OFFSET + percentage * dur;
     setProgress(percentage * 100);
   };
@@ -157,8 +157,8 @@ export default function MusicSection() {
   };
 
   const handleSkip = (delta: number) => {
-    if (!audioRef.current) return;
-    const dur = Math.max(1, (audioRef.current.duration || 1) - TIME_OFFSET);
+    if (!audioRef.current || isNaN(audioRef.current.duration)) return;
+    const dur = Math.max(1, audioRef.current.duration - TIME_OFFSET);
     const current = Math.max(0, audioRef.current.currentTime - TIME_OFFSET);
     const newTime = Math.max(0, Math.min(current + delta, dur));
     audioRef.current.currentTime = TIME_OFFSET + newTime;
@@ -269,7 +269,7 @@ export default function MusicSection() {
         <audio
           ref={audioRef}
           src={audioUrl}
-          preload="metadata"
+          preload="none"
           controlsList="nodownload noplaybackrate noremoteplayback"
           onContextMenu={(e) => e.preventDefault()}
           onTimeUpdate={handleTimeUpdate}

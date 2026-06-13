@@ -6,7 +6,14 @@
     <meta name="theme-color" content="#0A0A0A" />
 
     <title>Zachary Walker — Singer-Songwriter | Topeka, KS</title>
-    <meta name="description" content="Official site of Zachary Walker — singer-songwriter from Topeka, Kansas. Acoustic covers, original songs, live shows, and the latest releases." />
+    <meta name="description" content="Official site of Zachary Walker — singer-songwriter from Topeka, Kansas. Acoustic covers, original songs, live shows, bookings, and latest releases." />
+
+    <!-- Performance: preconnect to font origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Performance: preload hero video poster so it paints fast -->
+    <link rel="preload" as="image" href="/highlight.mp4" type="video/mp4" fetchpriority="high" />
 
     <!-- Copyright & rights metadata -->
     <meta name="author" content="Zachary Walker" />
@@ -33,7 +40,7 @@
         "@context": "https://schema.org",
         "@type": "MusicGroup",
         "name": "Zachary Walker",
-        "genre": "Acoustic, Singer-Songwriter",
+        "genre": ["Acoustic", "Singer-Songwriter", "Folk", "Country"],
         "location": "Topeka, Kansas, United States",
         "email": "mgmt@zacharywalkermusic.com",
         "copyrightHolder": { "@type": "Person", "name": "Zachary Walker" },

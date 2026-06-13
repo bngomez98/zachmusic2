@@ -21,11 +21,10 @@ export default function Hero() {
     // Pause video when off-screen to save resources/bandwidth
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!videoRef.current) return;
         if (entry.isIntersecting) {
-          videoRef.current.play().catch(() => {});
+          v.play().catch(() => {});
         } else {
-          videoRef.current.pause();
+          v.pause();
         }
       },
       { threshold: 0.1 }
