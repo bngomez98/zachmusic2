@@ -22,7 +22,6 @@ export default function AboutSection() {
             >
               <span className="w-8 h-[1px] bg-accent/60"></span>
               About
-              The Artist
             </motion.span>
 
             <motion.h2
@@ -35,9 +34,6 @@ export default function AboutSection() {
               Songs written close to home,
               <br />
               <span className="italic text-accent/90 font-light">played wherever they're needed.</span>
-              Songs written at the kitchen table,
-              <br />
-              <span className="italic text-accent/90 font-light">sung where they belong.</span>
             </motion.h2>
 
             <div className="space-y-6 text-text-muted text-base leading-relaxed font-light">
@@ -59,29 +55,6 @@ export default function AboutSection() {
                 nights, and intimate house concerts — and I'm always open to collaboration,
                 co-writes, and session work. If something in the music finds you, I'd love to
                 hear from you.
-                Zachary Walker is an acoustic singer-songwriter rooted in Topeka, Kansas — a
-                husband, a father, and the kind of working musician who treats every Saturday
-                night like opening night.
-              </p>
-
-              <p className="text-[15px]">
-                He works in the long American grain of country, folk, and singer-songwriter
-                Americana — fingerstyle and flatpicked acoustic guitar, plainspoken lyrics, and
-                a warm baritone that carries through a quiet wine bar or a packed lounge in
-                equal measure. The influences he wears on his sleeve are honest:{' '}
-                <span className="text-text-main">Tyler Childers</span> for the storytelling,{' '}
-                <span className="text-text-main">Zach Bryan</span> for the directness,{' '}
-                <span className="text-text-main">Jason Isbell</span> for the craft, and the long
-                line of road-tested troubadours that came before all of them.
-              </p>
-
-              <p className="text-[15px]">
-                You can catch him most often on the lounge stage at{' '}
-                <span className="text-text-main">B&amp;B Theatres Topeka Wheatfield 9</span>,
-                where he runs multi-hour sets of originals and carefully chosen covers from
-                6:30pm to 10:30pm. Originals like <em>"Love and Madness"</em> (2023) sit
-                alongside requests pulled live off the floor — every show a little different
-                from the last, every one of them his.
               </p>
             </div>
 

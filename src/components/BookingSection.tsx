@@ -14,7 +14,6 @@ import {
   Shield,
 } from 'lucide-react';
 import { submitBooking, isEmail } from '../lib/supabase';
-import { submitBooking } from '../lib/supabase';
 
 interface FormState {
   name: string;
