@@ -146,9 +146,9 @@ export default function MusicSection() {
   };
 
   const handlePauseToggle = () => {
-    if (!activeTrack) return;
+    if (!activeTrack || !audioRef.current) return;
     if (isPlaying) {
-      audioRef.current?.pause();
+      audioRef.current.pause();
       setIsPlaying(false);
     } else {
       setIsPlaying(true);

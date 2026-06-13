@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cookie, Settings, Check, X } from 'lucide-react';
+import { logConsent } from '../lib/supabase';
 
 export interface ConsentPrefs {
   essential: true;
@@ -35,6 +36,8 @@ function saveConsent(prefs: Omit<ConsentPrefs, 'essential' | 'timestamp' | 'vers
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(full));
   window.dispatchEvent(new CustomEvent('zw:consent', { detail: full }));
+  // Fire-and-forget remote audit log (non-blocking).
+  void logConsent({ analytics: full.analytics, marketing: full.marketing });
   return full;
 }
 

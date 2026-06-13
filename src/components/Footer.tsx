@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Instagram, Facebook, Mail, ArrowRight, Copyright, Coffee } from 'lucide-react';
 import { LINKS } from '../data';
 import { LegalDoc } from './LegalModal';
+import { subscribeNewsletter } from '../lib/supabase';
 
 function TikTokIcon({ size = 18 }: { size?: number }) {
   return (
@@ -56,6 +57,10 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
     setStatus('loading');
     setErrMsg('');
     try {
+      await subscribeNewsletter({ email, source: 'footer' });
+      setStatus('success');
+      setEmail('');
+    } catch (err) {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,7 +76,7 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
       }
     } catch {
       setStatus('error');
-      setErrMsg('Network error. Try again.');
+      setErrMsg(err instanceof Error ? err.message : 'Something went wrong. Try again.');
     }
   };
 
