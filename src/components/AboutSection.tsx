@@ -36,8 +36,8 @@ export default function AboutSection() {
               <span className="italic text-accent/90 font-light">played wherever they're needed.</span>
             </motion.h2>
 
-            <div className="space-y-6 text-text-muted text-base leading-relaxed font-light">
-              <p className="text-text-main font-normal text-lg sm:text-xl leading-relaxed">
+            <div>className="space-y-6 text-text-muted text-base leading-relaxed font-light">
+              <p className="text-text-main font-normal t ext-lg sm:text-xl leading-relaxed">
                 I'm Zachary Walker — a singer-songwriter based in Topeka, Kansas. I write and
                 perform acoustic songs,  original and covers.
               </p>
