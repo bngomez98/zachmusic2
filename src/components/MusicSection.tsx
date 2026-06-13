@@ -98,17 +98,6 @@ export default function MusicSection() {
     }
   };
 
-  const handlePauseToggle = () => {
-    if (!activeTrack) return;
-    if (isPlaying) {
-      audioRef.current?.pause();
-      setIsPlaying(false);
-    } else {
-      setIsPlaying(true);
-      safePlay();
-    }
-  };
-
   const handleTimeUpdate = () => {
     if (!audioRef.current || isNaN(audioRef.current.duration)) return;
     const actualCurrent = audioRef.current.currentTime;
