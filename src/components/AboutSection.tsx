@@ -43,28 +43,15 @@ export default function AboutSection() {
             <div className="space-y-6 text-text-muted text-base leading-relaxed font-light">
               <p className="text-text-main font-normal text-lg sm:text-xl leading-relaxed">
                 I'm Zachary Walker — a singer-songwriter based in Topeka, Kansas. I write and
-                perform acoustic country, folk, and singer-songwriter Americana with an emphasis
-                on lyrics that earn their keep and arrangements built around the voice and a
-                single guitar.
+                perform acoustic
               </p>
 
               <p className="text-[15px]">
-                The sound leans on fingerstyle and flatpicked guitar, a warm baritone, and the
-                kind of pacing that works as well in a quiet wine bar as it does in a packed
-                Saturday-night lounge. The writers who shaped how I hear a song are easy to
-                name:{' '}
-                <span className="text-text-main">Tyler Childers</span> for the storytelling,{' '}
-                <span className="text-text-main">Zach Bryan</span> for the directness, and{' '}
-                <span className="text-text-main">Jason Isbell</span> for the craft — alongside
-                the long line of road-tested songwriters that came before them.
-              </p>
+                
+                <span className="text-text-main">
 
               <p className="text-[15px]">
-                Most nights you'll find me on the lounge stage at{' '}
-                <span className="text-text-main">B&amp;B Theatres Topeka Wheatfield 9</span>,
-                running multi-hour sets of originals and carefully chosen covers from 6:30pm to
-                10:30pm. Originals like <em>"Love and Madness"</em> (2023) sit alongside live
-                requests pulled off the floor — every show a little different from the last.
+                
               </p>
 
               <p className="text-[15px]">
