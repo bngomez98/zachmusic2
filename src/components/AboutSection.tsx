@@ -46,7 +46,7 @@ export default function AboutSection() {
               </p>
 
               <p className="text-[15px]">
-                I'm available for house concerts, private events, and short club or café gigs. If you'd like to book a show, use the booking link below and I’ll follow up to confirm set length, song preferences, and the gear I'll bring.
+                I'm available for performances, private and public events, and bars, or café gigs. If you'd like to book a show, use the booking link below and I’ll follow up to confirm set length, song preferences, and the gear I'll bring.
               </p>
             </div>
 
