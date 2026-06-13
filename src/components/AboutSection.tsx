@@ -20,8 +20,8 @@ export default function AboutSection() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.2em] uppercase text-accent mb-6 leading-relaxed"
             >
-              <span className="w-8 h-[1px] bg-accent/60"></span>
-              About
+              <span className="w-8 h-[1px] bg-accent/60" />
+              The Artist
             </motion.span>
 
             <motion.h2
@@ -31,30 +31,22 @@ export default function AboutSection() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-4xl md:text-5xl lg:text-[3.75rem] font-display font-semibold tracking-tighter leading-[1.05] text-text-main mb-8"
             >
-              Songs written close to home,
+              Songs written at the kitchen table,
               <br />
-              <span className="italic text-accent/90 font-light">played wherever they're needed.</span>
+              <span className="italic text-accent/90 font-light">sung where they belong.</span>
             </motion.h2>
 
-            <div>className="space-y-6 text-text-muted text-base leading-relaxed font-light">
-              <p className="text-text-main font-normal t ext-lg sm:text-xl leading-relaxed">
-                I'm Zachary Walker — a singer-songwriter based in Topeka, Kansas. I write and
-                perform acoustic songs,  original and covers.
+            <div className="space-y-6 text-text-muted text-base leading-relaxed font-light">
+              <p className="text-text-main font-normal text-lg sm:text-xl leading-relaxed">
+                I'm Zach Walker, a singer-songwriter based in Topeka, Kansas. I write songs that lean on simple melodies and honest lyrics, and I arrange them so they work well in small rooms and community events.
               </p>
 
               <p className="text-[15px]">
-                
-                <span className="text-text-main">
-
-              <p className="text-[15px]">
-                
+                I play regularly at local coffeehouses, bars, and neighborhood events around northeast Kansas. My live sets mix originals with a few covers I enjoy — I aim for warm, straightforward performances that put the song first.
               </p>
 
               <p className="text-[15px]">
-                I take bookings for private events, weddings, restaurant residencies, corporate
-                nights, and intimate house concerts — and I'm always open to collaboration,
-                co-writes, and session work. If something in the music finds you, I'd love to
-                hear from you.
+                I'm available for house concerts, private events, and short club or café gigs. If you'd like to book a show, use the booking link below and I’ll follow up to confirm set length, song preferences, and the gear I'll bring.
               </p>
             </div>
 
@@ -79,7 +71,7 @@ export default function AboutSection() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 pt-8 border-t border-text-muted/10">
               <Fact icon={<MapPin size={14} />} label="Based" value="Topeka, KS" />
               <Fact icon={<Music size={14} />} label="Genre" value="Folk · Country" />
-              <Fact icon={<Mic size={14} />} label="Sets" value="3 Hours / Night" />
+              <Fact icon={<Mic size={14} />} label="Sets" value="Varies" />
               <Fact icon={<Calendar size={14} />} label="Active Since" value="2023" />
             </div>
 
