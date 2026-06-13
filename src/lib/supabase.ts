@@ -5,6 +5,11 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | und
 
 export const isSupabaseConfigured = (): boolean =>
   Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) ||
+  'https://ihnebngdsnhyniaskxiq.supabase.co';
+
+const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) ||
+  'sb_publishable_cqqpzdlosKglVmUcgHOaKA_ZFc3_x5L';
 
 let client: SupabaseClient | null = null;
 
@@ -38,6 +43,7 @@ export interface BookingArgs {
   phone?: string;
   eventType?: string;
   eventDate: string;
+  eventDate?: string;
   venue?: string;
   location?: string;
   hours?: string;
