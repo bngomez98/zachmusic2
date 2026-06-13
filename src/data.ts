@@ -39,7 +39,6 @@ export const SHOWS = [
     time: '6:30-9:30pm CST',
     title: 'Live at B&B Theatres Topeka',
     location: 'B&B Theatres Topeka Wheatfield 9, Topeka, KS',
-    amenities: 'Full-service bar, kitchen, indoor & outdoor seating',
     link: LINKS.facebookEvent,
     isAvailable: true,
   }
@@ -53,7 +52,7 @@ export const RELEASES = [
     id: 1,
     title: 'Love and Madness',
     subtitle: 'Original Audio — April 2023',
-    description: 'An acoustic original recorded in 2023.',
+    description: 'Original song written and performed by Zachary Walker, published by Zachary Walker Music, all rights reserved.',
     ctaLink: 'https://www.instagram.com/reel/CVGU0RfpJSL/',
     cover: img1,
     hasAudio: true,
