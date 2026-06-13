@@ -279,7 +279,7 @@ export default function BookingSection() {
                     )}
                   </button>
                   <a
-                    href="mailto:mgmt@zacharywalkermusic.com"
+                    href="mailto:booking@zacharywalkermusic.com"
                     className="inline-flex items-center justify-center gap-2 text-text-muted hover:text-accent transition-colors text-xs uppercase tracking-widest"
                   >
                     <Mail size={14} /> Or email directly
@@ -321,10 +321,10 @@ export default function BookingSection() {
                 Not ready to fill out the full form? Email and I'll reply personally.
               </p>
               <a
-                href="mailto:mgmt@zacharywalkermusic.com"
+                href="mailto:booking@zacharywalkermusic.com"
                 className="inline-flex items-center gap-2 text-accent text-xs uppercase tracking-[0.2em] font-semibold hover:gap-3 transition-all"
               >
-                <Mail size={14} /> mgmt@zacharywalkermusic.com
+                <Mail size={14} /> booking@zacharywalkermusic.com
               </a>
             </div>
           </aside>

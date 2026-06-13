@@ -1,29 +1,84 @@
-import React from 'react';
-import Button from '@/components/design/Button';
+import React, { useState } from 'react';
+import { Coffee, Menu, X } from 'lucide-react';
 
-export default function Header(){
+const NAV_LINKS = [
+  { href: '#releases', label: 'Releases' },
+  { href: '#shows', label: 'Shows' },
+  { href: '#about', label: 'About' },
+  { href: '#booking', label: 'Book a Show' },
+  { href: '#contact', label: 'Contact' },
+];
+
+interface Props {
+  onOpenTip?: () => void;
+}
+
+export default function Header({ onOpenTip }: Props) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <header className="w-full border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-30">
+    <header className="w-full border-b border-text-muted/10 bg-base/80 backdrop-blur-md sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
-          <a href="#" className="text-lg font-semibold">Zach Music</a>
-          <nav className="hidden md:flex items-center gap-3">
-            <a href="#releases" className="text-sm text-muted-foreground hover:text-foreground">Releases</a>
-            <a href="#tracks" className="text-sm text-muted-foreground hover:text-foreground">Tracks</a>
-            <a href="#about" className="text-sm text-muted-foreground hover:text-foreground">About</a>
-            <a href="#contact" className="text-sm text-muted-foreground hover:text-foreground">Contact</a>
-          </nav>
-        </div>
+        <a href="#" className="font-display text-xl font-medium text-accent tracking-tight">
+          Zachary Walker
+        </a>
+
+        <nav className="hidden md:flex items-center gap-5">
+          {NAV_LINKS.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="text-sm text-text-muted hover:text-accent transition-colors tracking-wide"
+            >
+              {l.label}
+            </a>
+          ))}
+        </nav>
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center bg-input text-muted-foreground px-3 py-2 rounded-md">
-            <svg className="w-4 h-4 mr-2 text-muted-foreground" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.5"/></svg>
-            <input className="bg-transparent outline-none text-sm" placeholder="Search tracks, releases..." aria-label="Search" />
-          </div>
-
-          <Button variant="ghost">Sign in</Button>
+          {onOpenTip && (
+            <button
+              type="button"
+              onClick={onOpenTip}
+              className="hidden sm:inline-flex items-center gap-2 text-text-muted hover:text-accent transition-colors text-xs uppercase tracking-widest"
+            >
+              <Coffee size={14} /> Tip
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden text-text-muted hover:text-accent transition-colors p-1"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
       </div>
+
+      {mobileOpen && (
+        <nav className="md:hidden border-t border-text-muted/10 bg-base px-6 py-4 space-y-3">
+          {NAV_LINKS.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={() => setMobileOpen(false)}
+              className="block text-sm text-text-muted hover:text-accent transition-colors tracking-wide py-1"
+            >
+              {l.label}
+            </a>
+          ))}
+          {onOpenTip && (
+            <button
+              type="button"
+              onClick={() => { onOpenTip(); setMobileOpen(false); }}
+              className="flex items-center gap-2 text-accent text-sm tracking-wide py-1"
+            >
+              <Coffee size={14} /> Buy Me a Coffee
+            </button>
+          )}
+        </nav>
+      )}
     </header>
   );
 }
