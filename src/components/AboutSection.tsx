@@ -20,7 +20,7 @@ export default function AboutSection() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.2em] uppercase text-accent mb-6 leading-relaxed"
             >
-              <span className="w-8 h-[1px] bg-accent/60"></span>
+              <span className="w-8 h-[1px] bg-accent/60" />
               The Artist
             </motion.span>
 
@@ -31,26 +31,22 @@ export default function AboutSection() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-4xl md:text-5xl lg:text-[3.75rem] font-display font-semibold tracking-tighter leading-[1.05] text-text-main mb-8"
             >
+              Songs written at the kitchen table,
               <br />
-              <span className="italic text-accent/90 font-light"> </span>
+              <span className="italic text-accent/90 font-light">sung where they belong.</span>
             </motion.h2>
 
             <div className="space-y-6 text-text-muted text-base leading-relaxed font-light">
               <p className="text-text-main font-normal text-lg sm:text-xl leading-relaxed">
-                
+                I'm Zach Walker, a singer-songwriter based in Topeka, Kansas. I write songs that lean on simple melodies and honest lyrics, and I arrange them so they work well in small rooms and community events.
               </p>
 
               <p className="text-[15px]">
-                
-                <span className="text-text-main">
-                <span className="text-text-main">
-                <span className="text-text-main">
+                I play regularly at local coffeehouses, bars, and neighborhood events around northeast Kansas. My live sets mix originals with a few covers I enjoy — I aim for warm, straightforward performances that put the song first.
               </p>
 
               <p className="text-[15px]">
-                You can catch him most often on the lounge stage at{' '}
-                <span className="text-text-main">B&amp;B Theatres Topeka Wheatfield 9</span>,
-                where I perform in the lounge 6:30pm to 9:30pm.
+                I'm available for house concerts, private events, and short club or café gigs. If you'd like to book a show, use the booking link below and I’ll follow up to confirm set length, song preferences, and the gear I'll bring.
               </p>
             </div>
 
@@ -64,16 +60,18 @@ export default function AboutSection() {
             >
               <Quote size={20} className="absolute -left-3 -top-1 text-accent/60 bg-surface p-0.5 rounded-full" />
               <blockquote className="text-xl md:text-2xl font-display italic text-text-main/90 leading-snug">
- “Music is the language of the spirit. It opens the secret of life bringing peace, abolishing strife.”     </blockquote>
+                "If the words are honest and the guitar's in tune, that's most of the job."
+              </blockquote>
               <figcaption className="text-[11px] uppercase tracking-[0.2em] text-accent/80 font-mono mt-3">
-― Kahlil Gibran                        </figcaption>
+                — Zachary Walker
+              </figcaption>
             </motion.figure>
 
             {/* Fact pillars */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 pt-8 border-t border-text-muted/10">
               <Fact icon={<MapPin size={14} />} label="Based" value="Topeka, KS" />
-              <Fact icon={<Music size={14} />} label="Genre" value="Folk · Rock · Pop · Country" />
-              <Fact icon={<Mic size={14} />} label="Sets" value="3 Hours / Night" />
+              <Fact icon={<Music size={14} />} label="Genre" value="Folk · Country" />
+              <Fact icon={<Mic size={14} />} label="Sets" value="Varies" />
               <Fact icon={<Calendar size={14} />} label="Active Since" value="2023" />
             </div>
 
