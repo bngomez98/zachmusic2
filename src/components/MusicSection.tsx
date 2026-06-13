@@ -139,12 +139,6 @@ export default function MusicSection() {
   const handleSeekKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (!audioRef.current) return;
     if (e.key === 'ArrowLeft') { e.preventDefault(); handleSkip(-5); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); handleSkip(5); }
-    if (e.key === 'Home') { e.preventDefault(); seekTo(0); }
-    if (e.key === 'End') { e.preventDefault(); seekTo(0.999); }
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handlePauseToggle(); }
-  };
-
   const handleSkip = (delta: number) => {
     if (!audioRef.current || isNaN(audioRef.current.duration)) return;
     const dur = Math.max(1, audioRef.current.duration - TIME_OFFSET);
