@@ -25,20 +25,6 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
       setStatus('success');
       setEmail('');
     } catch (err) {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) {
-        setStatus('success');
-        setEmail('');
-      } else {
-        setStatus('error');
-        setErrMsg(data?.error || 'Something went wrong. Try again.');
-      }
-    } catch {
       setStatus('error');
       setErrMsg(err instanceof Error ? err.message : 'Something went wrong. Try again.');
     }
