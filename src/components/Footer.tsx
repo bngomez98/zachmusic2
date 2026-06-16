@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Instagram, Facebook, Mail, ArrowRight, Copyright, Coffee } from 'lucide-react';
 import { LINKS } from '../data';
 import { LegalDoc } from './LegalModal';
-import { subscribeNewsletter } from '../lib/supabase';
+import { subscribeNewsletter, isSupabaseConfigured } from '../lib/supabase';
 
 interface Props {
   onOpenLegal: (doc: Exclude<LegalDoc, null>) => void;
@@ -20,13 +20,44 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
     if (!email) return;
     setStatus('loading');
     setErrMsg('');
+
+    // Try client-side Supabase first when configured, otherwise fall back to server API.
+    const useSupabase = isSupabaseConfigured();
+
     try {
-      await subscribeNewsletter({ email, source: 'footer' });
-      setStatus('success');
-      setEmail('');
+      if (useSupabase) {
+        const res = await subscribeNewsletter({ email, source: 'footer' });
+        if (res.ok) {
+          setStatus('success');
+          setEmail('');
+          return;
+        }
+        // Treat any non-ok as an error
+        throw new Error('Could not subscribe right now.');
+      }
+
+      // Fallback to server endpoint
+      const resp = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await resp.json().catch(() => null);
+      if (resp.ok || resp.status === 200 || resp.status === 201) {
+        setStatus('success');
+        setEmail('');
+        return;
+      }
+      throw new Error(data?.error || data?.message || 'Could not subscribe right now.');
     } catch (err) {
       setStatus('error');
-      setErrMsg(err instanceof Error ? err.message : 'Something went wrong. Try again.');
+      // If supabase() threw because env vars are missing, surface a helpful message.
+      const msg = err instanceof Error ? err.message : 'Something went wrong. Try again.';
+      if (msg.includes('temporarily unavailable') || msg.toLowerCase().includes('supabase')) {
+        setErrMsg('This form is temporarily unavailable. Please email mgmt@zacharywalkermusic.com.');
+      } else {
+        setErrMsg(msg);
+      }
     }
   };
 
@@ -71,7 +102,7 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="YOUR EMAIL"
-                className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors pr-10"
+                className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
                 required
                 disabled={status === 'loading' || status === 'success'}
               />
