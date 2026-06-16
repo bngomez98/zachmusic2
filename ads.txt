@@ -3,5 +3,4 @@
 # Publisher ID: pub-4169049103666831
 # Customer ID: 8838588512
 
-# Publisher record (confirm relationship and certification ID with your ad network if needed):
-google.com, pub-4169049103666831, DIRECT, 8838588512
+# Publisher record: google.com, pub-4169049103666831, DIRECT, 8838588512
