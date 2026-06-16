@@ -82,7 +82,7 @@ export default function Hero() {
           className="mt-12"
         >
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-[11px] font-semibold tracking-[0.2em] shadow-sm uppercase text-accent leading-relaxed flex items-center gap-3 before:content-[''] before:block before:w-8 before:h-[1px] before:bg-accent/60">
+            <span className="text-[11px] font-semibold tracking-[0.2em] shadow-sm uppercase text-accent leading-relaxed flex items-center gap-3 before:content-[''] before:block before:w-8 before:h-[]">
               Singer-Songwriter — Topeka, KS
             </span>
             <a
@@ -132,15 +132,13 @@ export default function Hero() {
               Book a Show
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </a>
-            <a
-              href="https://www.instagram.com/reel/CVGU0RfpJSL/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('zw:open-player', { detail: { src: '/loveandmadness.mp3' } }))}
               className="group inline-flex items-center justify-center gap-2 border border-text-main/20 hover:border-accent text-text-main px-8 py-4 font-normal text-[14px] hover:bg-accent transition-all duration-300"
             >
               <Play size={16} className="fill-current group-hover:text-base opacity-90" />
-              <span className="group-hover:text-base transition-colors duration-300">Watch Latest Reel</span>
-            </a>
+              <span className="group-hover:text-base transition-colors duration-300">Listen</span>
+            </button>
           </motion.div>
         </div>
       </div>
@@ -166,7 +164,7 @@ export default function Hero() {
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1 }}
         onClick={() => setIsMuted(!isMuted)}
-        className="absolute bottom-8 right-6 lg:right-12 z-30 p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white/70 hover:bg-black/50 hover:text-white hover:border-accent/60 transition-all cursor-pointer"
+        className="absolute bottom-8 right-6 lg:right-12 z-30 p-3 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white/70 hover:bg-black/50 hover:text-white hover:border-accent transition-colors"
         aria-label={isMuted ? 'Unmute video' : 'Mute video'}
       >
         {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
