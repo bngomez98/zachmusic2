@@ -2,5 +2,4 @@
   "name": "Zachary Music",
   "description": "Official music portfolio and shows for Zachary.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
