@@ -1,4 +1,5 @@
-# ads.txt for bngomez98/zachmusic2
+# ads.txt for zacharywalkermusic.com
+
 # Publisher ID: pub-4169049103666831
 # Customer ID: 8838588512
 
