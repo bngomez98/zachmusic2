@@ -1,17 +1,31 @@
 import express from "express";
 import path from "path";
 import cors from "cors";
-import Database from "better-sqlite3";
+import { Pool } from "pg";
+import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
-const DB_PATH = process.env.DB_PATH || "data.db";
-const db = new Database(DB_PATH);
-db.pragma("journal_mode = WAL");
+dotenv.config();
 
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error("Missing DATABASE_URL. Set it in your environment (.env or Vercel).");
+  process.exit(1);
+}
+
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  // For Neon on serverless platforms you may need:
+  // ssl: { rejectUnauthorized: false }
+});
+
+async function ensureSchema() {
+  // Create tables if they don't exist (idempotent)
+  const sql = `
 // Supabase (server-side) - use when SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are present
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -22,16 +36,16 @@ const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
 // Create local tables for fallback (SQLite)
 db.exec(`
   CREATE TABLE IF NOT EXISTS subscribers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT UNIQUE NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
     source TEXT,
     ip TEXT,
     user_agent TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   );
 
   CREATE TABLE IF NOT EXISTS bookings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     phone TEXT,
@@ -45,29 +59,33 @@ db.exec(`
     ip TEXT,
     user_agent TEXT,
     status TEXT DEFAULT 'new',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   );
 
   CREATE TABLE IF NOT EXISTS contact_messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id BIGSERIAL PRIMARY KEY,
     name TEXT,
     email TEXT NOT NULL,
     message TEXT NOT NULL,
     ip TEXT,
     user_agent TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
   );
 
   CREATE TABLE IF NOT EXISTS consent_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id BIGSERIAL PRIMARY KEY,
     fingerprint TEXT,
     analytics INTEGER NOT NULL,
     marketing INTEGER NOT NULL,
     ip TEXT,
     user_agent TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   );
-`);
+
+  CREATE INDEX IF NOT EXISTS subscribers_email_idx ON subscribers (lower(email));
+  `;
+  await pool.query(sql);
+}
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -77,6 +95,8 @@ function clientIp(req: express.Request): string {
 }
 
 async function startServer() {
+  await ensureSchema();
+
   const app = express();
   const PORT = Number(process.env.PORT || 3000);
 
@@ -104,6 +124,12 @@ async function startServer() {
 
   // ---------- Newsletter ----------
   app.post("/api/subscribe", rateLimit("subscribe", 8, 60_000), async (req, res) => {
+    const { email } = req.body || {};
+    if (!email || typeof email !== "string" || !EMAIL_RE.test(email)) {
+      return res.status(400).json({ error: "Valid email is required" });
+    }
+    const ip = clientIp(req);
+    const ua = req.get("user-agent") || "";
     const { email, source = 'footer' } = req.body || {};
     if (!email || typeof email !== "string" || !EMAIL_RE.test(email)) {
       return res.status(400).json({ error: "Valid email is required" });
@@ -131,31 +157,37 @@ async function startServer() {
           // Fall through to try local DB as a fallback
         } else {
           return res.status(201).json({ message: 'Successfully subscribed' });
-        }
-      } catch (err) {
-        console.error('supabase subscribe exception', err);
-        // Fall through to sqlite fallback
-      }
+    const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+    if (!email || !EMAIL_RE.test(email)) {
+      return res.status(400).json({ error: "Valid email is required" });
     }
-
-    // Fallback to local SQLite DB
+    const ip = clientIp(req);
+    const ua = req.get("user-agent") || "";
     try {
-      const stmt = db.prepare(
-        "INSERT INTO subscribers (email, source, ip, user_agent) VALUES (?, ?, ?, ?)"
+      // Upsert: if email exists do nothing (we return 200 "Already subscribed")
+      const result = await pool.query(
+        `INSERT INTO subscribers (email, source, ip, user_agent)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (email) DO NOTHING
+         RETURNING id`,
+        [email.toLowerCase(), "footer", ip, ua]
       );
+      if (result.rowCount === 0) {
       stmt.run(normalized, source, ip, ua);
       return res.status(201).json({ message: "Successfully subscribed" });
     } catch (err: any) {
       if (err.message?.includes("UNIQUE constraint failed")) {
         return res.status(200).json({ message: "Already subscribed" });
       }
+      res.status(201).json({ message: "Successfully subscribed" });
+    } catch (err) {
       console.error("subscribe error", err);
       return res.status(500).json({ error: "Failed to subscribe" });
     }
   });
 
   // ---------- Bookings ----------
-  app.post("/api/booking", rateLimit("booking", 4, 60_000), (req, res) => {
+  app.post("/api/booking", rateLimit("booking", 4, 60_000), async (req, res) => {
     const b = req.body || {};
     const required = ["name", "email", "eventDate", "message"];
     for (const f of required) {
@@ -170,24 +202,24 @@ async function startServer() {
       return res.status(400).json({ error: "Message too long" });
     }
     try {
-      const stmt = db.prepare(`
-        INSERT INTO bookings
+      await pool.query(
+        `INSERT INTO bookings
           (name, email, phone, event_type, event_date, venue, location, hours, budget, message, ip, user_agent)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-      stmt.run(
-        b.name.trim(),
-        b.email.trim().toLowerCase(),
-        b.phone?.trim() || null,
-        b.eventType?.trim() || null,
-        b.eventDate?.trim() || null,
-        b.venue?.trim() || null,
-        b.location?.trim() || null,
-        b.hours?.trim() || null,
-        b.budget?.trim() || null,
-        b.message.trim(),
-        clientIp(req),
-        req.get("user-agent") || ""
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [
+          b.name.trim(),
+          b.email.trim().toLowerCase(),
+          b.phone?.trim() || null,
+          b.eventType?.trim() || null,
+          b.eventDate?.trim() || null,
+          b.venue?.trim() || null,
+          b.location?.trim() || null,
+          b.hours?.trim() || null,
+          b.budget?.trim() || null,
+          b.message.trim(),
+          clientIp(req),
+          req.get("user-agent") || ""
+        ]
       );
       res.status(201).json({ message: "Booking inquiry received" });
     } catch (err) {
@@ -197,14 +229,15 @@ async function startServer() {
   });
 
   // ---------- Contact ----------
-  app.post("/api/contact", rateLimit("contact", 6, 60_000), (req, res) => {
+  app.post("/api/contact", rateLimit("contact", 6, 60_000), async (req, res) => {
     const { name, email, message } = req.body || {};
     if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: "Valid email is required" });
     if (!message || !message.trim()) return res.status(400).json({ error: "Message is required" });
     try {
-      db.prepare(
-        "INSERT INTO contact_messages (name, email, message, ip, user_agent) VALUES (?, ?, ?, ?, ?)"
-      ).run(name?.trim() || null, email.trim().toLowerCase(), message.trim(), clientIp(req), req.get("user-agent") || "");
+      await pool.query(
+        "INSERT INTO contact_messages (name, email, message, ip, user_agent) VALUES ($1, $2, $3, $4, $5)",
+        [name?.trim() || null, email.trim().toLowerCase(), message.trim(), clientIp(req), req.get("user-agent") || ""]
+      );
       res.status(201).json({ message: "Message received" });
     } catch (err) {
       console.error("contact error", err);
@@ -213,17 +246,12 @@ async function startServer() {
   });
 
   // ---------- Consent log ----------
-  app.post("/api/consent", rateLimit("consent", 20, 60_000), (req, res) => {
+  app.post("/api/consent", rateLimit("consent", 20, 60_000), async (req, res) => {
     const { fingerprint, analytics, marketing } = req.body || {};
     try {
-      db.prepare(
-        "INSERT INTO consent_log (fingerprint, analytics, marketing, ip, user_agent) VALUES (?, ?, ?, ?, ?)"
-      ).run(
-        (fingerprint || "").toString().slice(0, 64),
-        analytics ? 1 : 0,
-        marketing ? 1 : 0,
-        clientIp(req),
-        req.get("user-agent") || ""
+      await pool.query(
+        "INSERT INTO consent_log (fingerprint, analytics, marketing, ip, user_agent) VALUES ($1, $2, $3, $4, $5)",
+        [(fingerprint || "").toString().slice(0, 64), analytics ? 1 : 0, marketing ? 1 : 0, clientIp(req), req.get("user-agent") || ""]
       );
       res.status(201).json({ ok: true });
     } catch (err) {
@@ -257,4 +285,7 @@ async function startServer() {
   });
 }
 
-startServer();
+startServer().catch((err) => {
+  console.error("Failed to start server", err);
+  process.exit(1);
+});

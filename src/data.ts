@@ -1,20 +1,3 @@
-export const LINKS = {
-  instagram: 'https://www.instagram.com/za.chary5068/reels/',
-  facebook: 'https://www.facebook.com/profile.php?id=61565838372447',
-  facebookEvent: 'https://www.facebook.com/events/936053559031406/',
-  facebookMusicPage: 'https://www.facebook.com/p/Topcityzachary-61565838372447/',
-  tiktok: 'https://www.tiktok.com/@fullmetalzcw',
-  youtube: 'https://www.youtube.com/@fullmetalzcw',
-  twitch: 'https://www.twitch.tv/fullmetalzcw',
-  spotify: 'https://open.spotify.com/artist/fullmetalzcw',
-  paypal: 'https://www.paypal.com/paypalme/fullmetalzcw',
-  cashapp: 'https://cash.app/$fullmetalzcw',
-  venmo: 'https://venmo.com/u/fullmetalzcw',
-};
-
-export const SHOWS = [
-  {
-    id: 1,
     date: 'JUL 17',
     time: '6:30-9:30pm CST',
     title: 'Live at B&B Theatres Topeka',
@@ -56,6 +39,7 @@ export const RELEASES = [
     ctaLink: 'https://www.instagram.com/reel/CVGU0RfpJSL/',
     cover: img1,
     hasAudio: true,
+    audioUrl: '/loveandmadness.mp3',
   },
   {
     id: 2,
@@ -83,7 +67,8 @@ export const GALLERY = [
     orientation: "portrait",
     likes: "118",
     comments: "14",
-    link: "https://www.instagram.com/za.chary5068/reels/"
+-    link: "https://www.instagram.com/za.chary5068/reels/"
++    link: "https://www.instagram.com/zacharywalkermusic/reels/"
   },
   {
     src: "https://images.unsplash.com/photo-1516280440502-ad9e1c312fb1?auto=format&fit=crop&q=80&w=1200",
@@ -91,6 +76,7 @@ export const GALLERY = [
     orientation: "landscape",
     likes: "186",
     comments: "28",
-    link: "https://www.instagram.com/za.chary5068/reels/"
+-    link: "https://www.instagram.com/za.chary5068/reels/"
++    link: "https://www.instagram.com/zacharywalkermusic/reels/"
   }
 ];
