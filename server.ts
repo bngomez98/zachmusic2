@@ -157,14 +157,12 @@ async function startServer() {
           // Fall through to try local DB as a fallback
         } else {
           return res.status(201).json({ message: 'Successfully subscribed' });
-        }
-      } catch (err) {
-        console.error('supabase subscribe exception', err);
-        // Fall through to sqlite fallback
-      }
+    const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+    if (!email || !EMAIL_RE.test(email)) {
+      return res.status(400).json({ error: "Valid email is required" });
     }
-
-    // Fallback to local SQLite DB
+    const ip = clientIp(req);
+    const ua = req.get("user-agent") || "";
     try {
       // Upsert: if email exists do nothing (we return 200 "Already subscribed")
       const result = await pool.query(
@@ -172,7 +170,7 @@ async function startServer() {
          VALUES ($1, $2, $3, $4)
          ON CONFLICT (email) DO NOTHING
          RETURNING id`,
-        [email.trim().toLowerCase(), "footer", ip, ua]
+        [email.toLowerCase(), "footer", ip, ua]
       );
       if (result.rowCount === 0) {
       stmt.run(normalized, source, ip, ua);
