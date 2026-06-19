@@ -1,23 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-export default function Player() {
+export default function Player({ src = '/loveandmadness.mp3', onClose }: { src?: string; onClose?: () => void }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    // Update source when prop changes
+    if (audio.src !== src) {
+      audio.src = src;
+      // Attempt to autoplay when source changes
+      audio.load();
+      audio.play().catch(() => {});
+      setPlaying(true);
+    }
 
     const onTime = () => {
-      if (!isNaN(audio.duration) && audio.duration > 0) {
-        setProgress((audio.currentTime / audio.duration) * 100);
-      }
+      if (!audio || !audio.duration || isNaN(audio.duration)) return;
+      setProgress((audio.currentTime / audio.duration) * 100);
     };
-    const onMeta = () => {
-      if (!isNaN(audio.duration)) setDuration(audio.duration);
-    };
+    const onMeta = () => setDuration(audio.duration || 0);
     const onEnd = () => {
       setPlaying(false);
       setProgress(0);
@@ -31,7 +36,7 @@ export default function Player() {
       audio.removeEventListener('loadedmetadata', onMeta);
       audio.removeEventListener('ended', onEnd);
     };
-  }, []);
+  }, [src]);
 
   const toggle = () => {
     const audio = audioRef.current;
@@ -64,7 +69,7 @@ export default function Player() {
       aria-label="Audio player"
       className="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-lg border-t border-text-muted/10"
     >
-      <audio ref={audioRef} src="/loveandmadness.mp3" preload="metadata" />
+      <audio ref={audioRef} src={src} preload="metadata" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
         <button
           type="button"
@@ -90,7 +95,7 @@ export default function Player() {
         </div>
 
         <div className="hidden sm:flex items-center gap-3 flex-1 max-w-xs">
-          <span className="text-[10px] text-text-muted font-mono w-8 text-right">{fmt(duration * progress / 100)}</span>
+          <span className="text-[10px] text-text-muted font-mono w-8 text-right">{fmt((duration * progress) / 100)}</span>
           <div
             role="progressbar"
             aria-valuenow={Math.round(progress)}
@@ -106,6 +111,16 @@ export default function Player() {
             />
           </div>
           <span className="text-[10px] text-text-muted font-mono w-8">{fmt(duration)}</span>
+        </div>
+
+        <div className="ml-3">
+          <button
+            onClick={() => onClose?.()}
+            aria-label="Close player"
+            className="text-xs text-text-muted hover:text-accent"
+          >
+            Close
+          </button>
         </div>
       </div>
     </section>

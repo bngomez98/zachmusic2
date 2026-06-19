@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function About() {
   return (
-    <section id="about" className="bg-base py-32 border-t border-text-muted/10">
+    <section id="about" className="bg-base py-24 text-text-main">
       <div className="max-w-4xl mx-auto px-6 lg:px-12">
         <div className="flex flex-col items-center text-center mb-16 gap-4">
           <span className="flex items-center justify-center gap-2 text-[12px] font-medium tracking-[0.08em] uppercase text-accent leading-relaxed">
@@ -20,8 +20,8 @@ export default function About() {
           <p>
             Zachary Walker is an independent singer-songwriter based in Topeka, Kansas.
             His work centers on acoustic guitar and vocal performance, with material that
-            spans original songs and a curated selection of covers across folk, country,
-            and singer-songwriter Americana.
+            spans original songs and a curated selection of covers across folk, rock,
+            indie, and pop.
           </p>
           <p>
             He performs regularly in northeast Kansas, including a recurring lounge
@@ -53,7 +53,7 @@ export default function About() {
 
         <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8 border-t border-text-muted/10 max-w-2xl mx-auto">
           <Fact label="Based" value="Topeka, KS" />
-          <Fact label="Genre" value="Folk · Country" />
+          <Fact label="Genre" value="Folk · Rock · Indie · Pop" />
           <Fact label="Format" value="Solo Acoustic" />
           <Fact label="Active Since" value="2023" />
         </div>
