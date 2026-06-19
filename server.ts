@@ -4,6 +4,10 @@ import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
+import dotenv from "dotenv";
+import { createClient } from '@supabase/supabase-js';
+
+dotenv.config();
 
 dotenv.config();
 
@@ -22,6 +26,15 @@ const pool = new Pool({
 async function ensureSchema() {
   // Create tables if they don't exist (idempotent)
   const sql = `
+// Supabase (server-side) - use when SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are present
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  : null;
+
+// Create local tables for fallback (SQLite)
+db.exec(`
   CREATE TABLE IF NOT EXISTS subscribers (
     id BIGSERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
@@ -117,6 +130,41 @@ async function startServer() {
     }
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
+    const { email, source = 'footer' } = req.body || {};
+    if (!email || typeof email !== "string" || !EMAIL_RE.test(email)) {
+      return res.status(400).json({ error: "Valid email is required" });
+    }
+
+    const normalized = email.trim().toLowerCase();
+    const ip = clientIp(req);
+    const ua = req.get("user-agent") || "";
+
+    // If a Supabase server client is configured (Neon or Supabase Postgres), write there first
+    if (supabaseAdmin) {
+      try {
+        const { error } = await supabaseAdmin.from('subscribers').insert({
+          email: normalized,
+          source,
+          ip,
+          user_agent: ua,
+        });
+        if (error) {
+          // treat unique constraint as already-subscribed
+          if (error.code === '23505' || (error.message || '').toLowerCase().includes('duplicate')) {
+            return res.status(200).json({ message: 'Already subscribed' });
+          }
+          console.error('supabase subscribe error', error);
+          // Fall through to try local DB as a fallback
+        } else {
+          return res.status(201).json({ message: 'Successfully subscribed' });
+        }
+      } catch (err) {
+        console.error('supabase subscribe exception', err);
+        // Fall through to sqlite fallback
+      }
+    }
+
+    // Fallback to local SQLite DB
     try {
       // Upsert: if email exists do nothing (we return 200 "Already subscribed")
       const result = await pool.query(
@@ -127,12 +175,16 @@ async function startServer() {
         [email.trim().toLowerCase(), "footer", ip, ua]
       );
       if (result.rowCount === 0) {
+      stmt.run(normalized, source, ip, ua);
+      return res.status(201).json({ message: "Successfully subscribed" });
+    } catch (err: any) {
+      if (err.message?.includes("UNIQUE constraint failed")) {
         return res.status(200).json({ message: "Already subscribed" });
       }
       res.status(201).json({ message: "Successfully subscribed" });
     } catch (err) {
       console.error("subscribe error", err);
-      res.status(500).json({ error: "Failed to subscribe" });
+      return res.status(500).json({ error: "Failed to subscribe" });
     }
   });
 
