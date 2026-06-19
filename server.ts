@@ -4,10 +4,6 @@ import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-import dotenv from "dotenv";
-import { createClient } from '@supabase/supabase-js';
-
-dotenv.config();
 
 dotenv.config();
 
@@ -24,66 +20,68 @@ const pool = new Pool({
 });
 
 async function ensureSchema() {
-  // Create tables if they don't exist (idempotent)
+  // Create a migration tracking table and required application tables (idempotent)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      id BIGSERIAL PRIMARY KEY,
+      filename TEXT NOT NULL UNIQUE,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `);
+
+  // Create application tables
   const sql = `
-// Supabase (server-side) - use when SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are present
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-  : null;
+    CREATE TABLE IF NOT EXISTS subscribers (
+      id BIGSERIAL PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      source TEXT,
+      ip TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
 
-// Create local tables for fallback (SQLite)
-db.exec(`
-  CREATE TABLE IF NOT EXISTS subscribers (
-    id BIGSERIAL PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
-    source TEXT,
-    ip TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-  );
+    CREATE TABLE IF NOT EXISTS bookings (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      event_type TEXT,
+      event_date TEXT,
+      venue TEXT,
+      location TEXT,
+      hours TEXT,
+      budget TEXT,
+      message TEXT NOT NULL,
+      ip TEXT,
+      user_agent TEXT,
+      status TEXT DEFAULT 'new',
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
 
-  CREATE TABLE IF NOT EXISTS bookings (
-    id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    phone TEXT,
-    event_type TEXT,
-    event_date TEXT,
-    venue TEXT,
-    location TEXT,
-    hours TEXT,
-    budget TEXT,
-    message TEXT NOT NULL,
-    ip TEXT,
-    user_agent TEXT,
-    status TEXT DEFAULT 'new',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-  );
+    CREATE TABLE IF NOT EXISTS contact_messages (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT,
+      email TEXT NOT NULL,
+      message TEXT NOT NULL,
+      ip TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
 
-  CREATE TABLE IF NOT EXISTS contact_messages (
-    id BIGSERIAL PRIMARY KEY,
-    name TEXT,
-    email TEXT NOT NULL,
-    message TEXT NOT NULL,
-    ip TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
-  );
+    CREATE TABLE IF NOT EXISTS consent_log (
+      id BIGSERIAL PRIMARY KEY,
+      fingerprint TEXT,
+      analytics INTEGER NOT NULL,
+      marketing INTEGER NOT NULL,
+      ip TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
 
-  CREATE TABLE IF NOT EXISTS consent_log (
-    id BIGSERIAL PRIMARY KEY,
-    fingerprint TEXT,
-    analytics INTEGER NOT NULL,
-    marketing INTEGER NOT NULL,
-    ip TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-  );
-
-  CREATE INDEX IF NOT EXISTS subscribers_email_idx ON subscribers (lower(email));
+    CREATE INDEX IF NOT EXISTS idx_subscribers_email_lower ON subscribers (lower(email));
   `;
+
+  // Execute the schema SQL (pg allows multiple statements in a single query)
   await pool.query(sql);
 }
 
@@ -124,62 +122,29 @@ async function startServer() {
 
   // ---------- Newsletter ----------
   app.post("/api/subscribe", rateLimit("subscribe", 8, 60_000), async (req, res) => {
-    const { email } = req.body || {};
-    if (!email || typeof email !== "string" || !EMAIL_RE.test(email)) {
+    const { email: rawEmail, source = "footer" } = req.body || {};
+    if (!rawEmail || typeof rawEmail !== "string") {
       return res.status(400).json({ error: "Valid email is required" });
     }
-    const ip = clientIp(req);
-    const ua = req.get("user-agent") || "";
-    const { email, source = 'footer' } = req.body || {};
-    if (!email || typeof email !== "string" || !EMAIL_RE.test(email)) {
-      return res.status(400).json({ error: "Valid email is required" });
-    }
+    const email = rawEmail.trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) return res.status(400).json({ error: "Valid email is required" });
 
-    const normalized = email.trim().toLowerCase();
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
 
-    // If a Supabase server client is configured (Neon or Supabase Postgres), write there first
-    if (supabaseAdmin) {
-      try {
-        const { error } = await supabaseAdmin.from('subscribers').insert({
-          email: normalized,
-          source,
-          ip,
-          user_agent: ua,
-        });
-        if (error) {
-          // treat unique constraint as already-subscribed
-          if (error.code === '23505' || (error.message || '').toLowerCase().includes('duplicate')) {
-            return res.status(200).json({ message: 'Already subscribed' });
-          }
-          console.error('supabase subscribe error', error);
-          // Fall through to try local DB as a fallback
-        } else {
-          return res.status(201).json({ message: 'Successfully subscribed' });
-    const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
-    if (!email || !EMAIL_RE.test(email)) {
-      return res.status(400).json({ error: "Valid email is required" });
-    }
-    const ip = clientIp(req);
-    const ua = req.get("user-agent") || "";
     try {
-      // Upsert: if email exists do nothing (we return 200 "Already subscribed")
       const result = await pool.query(
         `INSERT INTO subscribers (email, source, ip, user_agent)
          VALUES ($1, $2, $3, $4)
          ON CONFLICT (email) DO NOTHING
          RETURNING id`,
-        [email.toLowerCase(), "footer", ip, ua]
+        [email, source, ip, ua]
       );
+
       if (result.rowCount === 0) {
-      stmt.run(normalized, source, ip, ua);
-      return res.status(201).json({ message: "Successfully subscribed" });
-    } catch (err: any) {
-      if (err.message?.includes("UNIQUE constraint failed")) {
         return res.status(200).json({ message: "Already subscribed" });
       }
-      res.status(201).json({ message: "Successfully subscribed" });
+      return res.status(201).json({ message: "Successfully subscribed" });
     } catch (err) {
       console.error("subscribe error", err);
       return res.status(500).json({ error: "Failed to subscribe" });
@@ -260,9 +225,15 @@ async function startServer() {
     }
   });
 
-  // ---------- Health ----------
-  app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, time: new Date().toISOString() });
+  // ---------- Healthz ----------
+  app.get("/healthz", async (_req, res) => {
+    try {
+      await pool.query("SELECT 1");
+      res.json({ ok: true, time: new Date().toISOString() });
+    } catch (err) {
+      console.error("healthz error", err);
+      res.status(503).json({ ok: false });
+    }
   });
 
   // ---------- Vite middleware / static ----------
@@ -280,9 +251,23 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    console.log("Shutting down...");
+    server.close();
+    try {
+      await pool.end();
+    } catch (err) {
+      console.error("Error shutting down pool", err);
+    }
+    process.exit(0);
+  };
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 startServer().catch((err) => {
