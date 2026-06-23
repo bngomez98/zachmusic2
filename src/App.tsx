@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import Header from '@/components/design/Header';
 import Hero from '@/components/design/Hero';
 import About from '@/components/design/About';
@@ -57,6 +58,7 @@ export default function App() {
       <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} onOpenConsent={openConsent} />
       <TipJar open={tipOpen} onClose={() => setTipOpen(false)} />
       <CookieConsent onOpenPolicy={() => setLegalDoc('cookies')} />
+      <Analytics />
     </div>
   );
 }
