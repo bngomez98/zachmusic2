@@ -85,6 +85,13 @@ export default function BookingSection() {
       await submitBooking(form);
       setStatus('success');
       setForm(INITIAL);
+
+      // Google tag (gtag.js) event for Contact Us conversion
+      if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+        (window as any).gtag('event', 'ads_conversion_Contact_Us_1', {
+          // <event_parameters>
+        });
+      }
     } catch (e) {
       setStatus('error');
       setErrMsg(
