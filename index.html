@@ -1,45 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Zachary Walker — Singer-Songwriter | Topeka, KS</title>
     <meta name="description" content="Official site of Zachary Walker — singer-songwriter from Topeka, Kansas. Acoustic covers, original songs, live shows, bookings, and latest releases." />
-
+    
     <!-- Performance: preconnect to font origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <!-- Performance: preload hero video poster so it paints fast -->
-    <link rel="preload" as="image" href="/highlight-poster.jpg" type="image/jpeg" fetchpriority="high" />
-
+    
+    <!-- Performance: preload hero video poster -->
+    <link rel="preload" as="image" href="/highlight-poster.jpg" type="image/jpeg" />
+    
     <!-- Copyright & rights metadata -->
     <meta name="author" content="Zachary Walker" />
     <meta name="copyright" content="© 2023–2026 Zachary Walker. All Rights Reserved." />
     <meta name="rights" content="All original musical works, sound recordings, lyrics, photography, and video on this site are the exclusive property of Zachary Walker and are protected under U.S. and international copyright law. Unauthorized use, reproduction, distribution, sampling, or AI training is prohibited." />
     <meta name="robots" content="index, follow, noai, noimageai" />
     <meta name="googlebot" content="index, follow, noimageindex" />
-
+    
     <!-- Open Graph -->
     <meta property="og:type" content="music.musician" />
     <meta property="og:site_name" content="Zachary Walker" />
     <meta property="og:title" content="Zachary Walker — Singer-Songwriter" />
     <meta property="og:description" content="Acoustic covers and original songs from Topeka, KS." />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:url" content="https://zacharywalkermusic.com/" />
     <meta property="og:locale" content="en_US" />
-
+    
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Zachary Walker — Singer-Songwriter" />
     <meta name="twitter:description" content="Acoustic covers and original songs from Topeka, KS." />
-
+    <meta name="twitter:image" content="/og-image.jpg" />
+    
+    <!-- Google AdSense -->
+    <meta name="google-adsense-account" content="ca-pub-5549687431053942" />
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5549687431053942" crossorigin="anonymous"></script>
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PVVS2BV5');</script>
+    
     <!-- Structured data: ownership / copyright -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "MusicGroup",
         "name": "Zachary Walker",
+        "url": "https://zacharywalkermusic.com/",
+        "image": "/og-image.jpg",
         "genre": ["Folk", "Rock", "Indie", "Pop"],
-        "location": "Topeka, Kansas, United States",
+        "location": {
+          "@type": "Place",
+          "name": "Topeka, Kansas, United States"
+        },
         "email": "mgmt@zacharywalkermusic.com",
-        "copyrightHolder": { "@type": "Person", "name": "Zachary Walker" },
+        "copyrightHolder": { 
+          "@type": "Person", 
+          "name": "Zachary Walker" 
+        },
         "copyrightYear": "2023",
         "sameAs": [
           "https://www.instagram.com/zacharywalkermusic/",
@@ -47,13 +71,12 @@
         ]
       }
     </script>
-    <meta name="google-adsense-account" content="ca-pub-5549687431053942" />
   </head>
-  <body> 
+  <body>
     <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PVVS2BV5"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PVVS2BV5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
+    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
