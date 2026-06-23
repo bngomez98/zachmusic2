@@ -1,7 +1,4 @@
-# Publisher ID: pub-4169049103666831
-# Customer ID: 8838588512
-
-# Publisher record: google.com, pub-4169049103666831, DIRECT, 8838588512
+# ads.txt for zacharywalkermusic.com
+# AdSense Publisher: ca-pub-5549687431053942
 
 google.com, pub-5549687431053942, DIRECT, f08c47fec0942fa0
-# ads.txt for zacharywalkermusic.com
