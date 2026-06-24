@@ -8,16 +8,16 @@ export default function Hero() {
     if (!v) return;
     v.muted = true;
     v.play().catch(() => {
-      // Autoplay blocked — video stays paused silently.
+      // Autoplay blocked silently.
     });
   }, []);
 
   return (
     <section
       id="hero"
-      className="relative overflow-hidden bg-base min-h-screen flex items-center"
+      className="relative overflow-hidden bg-base min-h-screen flex items-end"
     >
-      {/* Background video */}
+      {/* Background video — cropped to show performer and crowd engagement */}
       <video
         ref={videoRef}
         src="/promo.mp4"
@@ -28,17 +28,26 @@ export default function Hero() {
         preload="auto"
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-        style={{ objectPosition: 'center top' }}
+        style={{ objectPosition: '50% 35%' }}
       />
 
-      {/* Dark overlay so text stays legible */}
-      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      {/* Radial vignette — darkens edges, keeps performer area bright */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(ellipse 70% 80% at 50% 40%, transparent 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.88) 100%)',
+        }}
+      />
 
-      {/* Gradient fade at bottom into the next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-base to-transparent pointer-events-none" />
+      {/* Bottom gradient fades into the next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-base via-base/80 to-transparent pointer-events-none" />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-32 md:py-44 w-full">
+      {/* Top gradient keeps header legible */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+
+      {/* Content — anchored to the bottom so text sits above the crowd */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pb-24 md:pb-36 w-full">
         <p className="text-[12px] font-medium tracking-[0.2em] uppercase text-accent mb-6 flex items-center gap-2">
           <span className="w-6 h-[1px] bg-accent/60" />
           Singer-Songwriter — Topeka, KS
@@ -47,7 +56,7 @@ export default function Hero() {
           Zachary<br />Walker
         </h1>
         <p className="text-base md:text-lg text-white/70 max-w-md mb-10 font-light leading-relaxed">
-          Acoustic originals and covers. Performing in northeast Kansas and
+          Acoustic originals and covers. Performing across northeast Kansas —
           available for bookings, live shows, and licensing inquiries.
         </p>
         <div className="flex flex-wrap gap-4">
