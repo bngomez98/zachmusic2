@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Instagram, Facebook, Mail, ArrowRight, Copyright, Coffee } from 'lucide-react';
+import { Instagram, Facebook, Youtube, Mail, ArrowRight, Copyright, Heart } from 'lucide-react';
 import { LINKS } from '../data';
 import { LegalDoc } from './LegalModal';
 import { subscribeNewsletter } from '../lib/supabase';
@@ -11,24 +11,25 @@ interface Props {
 }
 
 export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle');
   const [errMsg, setErrMsg] = useState('');
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!name || !email) return;
     setStatus('loading');
     setErrMsg('');
 
     try {
-      const res = await subscribeNewsletter({ email, source: 'footer' });
+      const res = await subscribeNewsletter({ name, email, source: 'footer' });
       if (res.ok) {
         setStatus('success');
+        setName('');
         setEmail('');
         return;
       }
-      // Treat any non-ok as an error
       throw new Error('Could not subscribe right now.');
     } catch (err) {
       setStatus('error');
@@ -57,46 +58,77 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
               <Mail size={20} className="group-hover:stroke-accent transition-colors duration-300" /> mgmt@zacharywalkermusic.com
             </a>
 
-            <div className="flex items-center gap-4 mt-4 flex-wrap">
+            <div className="flex items-center gap-3 mt-4 flex-wrap">
               <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
                 <Instagram size={20} />
               </a>
               <a href={LINKS.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
                 <Facebook size={20} />
               </a>
+              <a href={LINKS.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
+                <Youtube size={20} />
+              </a>
+              <a href={LINKS.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.77 1.52V6.72a4.85 4.85 0 01-1-.03z" />
+                </svg>
+              </a>
               <button
                 onClick={onOpenTip}
-                className="ml-2 inline-flex items-center gap-2 bg-accent text-base px-4 py-2.5 rounded-full text-[11px] font-semibold uppercase tracking-widest hover:bg-accent/90 transition-colors"
+                className="ml-1 inline-flex items-center gap-2 bg-accent text-base px-4 py-2.5 rounded-full text-[11px] font-semibold uppercase tracking-widest hover:bg-accent/90 transition-colors"
               >
-                <Coffee size={14} /> Buy Me a Coffee
+                <Heart size={14} /> Support the Music
               </button>
             </div>
           </div>
 
           <div className="flex w-full md:max-w-sm flex-col bg-surface/50 border border-white/5 p-8 rounded-2xl">
             <h3 className="font-display text-xl mb-2 text-accent">Newsletter</h3>
-            <p className="text-sm text-text-muted mb-6">Sign up to receive updates on new releases, live shows, and exclusive content.</p>
-            <form onSubmit={handleSubscribe} className="relative flex items-center w-full">
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="YOUR EMAIL"
-                className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
-                required
-                disabled={status === 'loading' || status === 'success'}
-              />
-              <button
-                type="submit"
-                aria-label="Subscribe"
-                className="absolute right-0 top-0 pb-3 text-text-muted hover:text-accent transition-colors disabled:opacity-50"
-                disabled={status === 'loading' || status === 'success'}
-              >
-                <ArrowRight size={18} />
-              </button>
-            </form>
-            {status === 'success' && <p className="text-accent text-xs mt-3">Thanks for subscribing. Watch your inbox.</p>}
-            {status === 'error' && <p className="text-red-400 text-xs mt-3">{errMsg}</p>}
+            <p className="text-sm text-text-muted mb-6">Sign up for updates on new releases, live shows, and exclusive content.</p>
+            {status === 'success' ? (
+              <div className="py-4">
+                <p className="text-accent text-sm font-medium mb-1">You&apos;re in.</p>
+                <p className="text-text-muted text-xs leading-relaxed">Check your inbox — a welcome email is on its way with a preview of what&apos;s coming.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex flex-col gap-4 w-full">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="YOUR NAME"
+                    className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
+                    required
+                    disabled={status === 'loading'}
+                  />
+                </div>
+                <div className="relative flex items-center w-full">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="YOUR EMAIL"
+                    className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
+                    required
+                    disabled={status === 'loading'}
+                  />
+                  <button
+                    type="submit"
+                    aria-label="Subscribe"
+                    className="absolute right-0 top-0 pb-3 text-text-muted hover:text-accent transition-colors disabled:opacity-50"
+                    disabled={status === 'loading'}
+                  >
+                    {status === 'loading' ? (
+                      <svg className="animate-spin" width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" strokeOpacity="0.25" /><path d="M12 2a10 10 0 0 1 10 10" /></svg>
+                    ) : (
+                      <ArrowRight size={18} />
+                    )}
+                  </button>
+                </div>
+                {status === 'error' && <p className="text-red-400 text-xs">{errMsg}</p>}
+              </form>
+            )}
             <p className="text-[10px] text-text-muted/50 mt-4 leading-relaxed">
               By subscribing you agree to our{' '}
               <button onClick={() => onOpenLegal('privacy')} className="underline hover:text-accent transition-colors">Privacy Policy</button>.
@@ -136,12 +168,20 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
             <button onClick={onOpenConsent} className="hover:text-accent transition-colors tracking-widest">Preferences</button>
             <a href="mailto:mgmt@zacharywalkermusic.com" className="hover:text-accent transition-colors tracking-widest">Contact</a>
           </div>
-          <div className="flex gap-6">
+          <div className="flex gap-4">
             <a href={LINKS.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-accent transition-colors">
               <Instagram size={18} />
             </a>
             <a href={LINKS.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-accent transition-colors">
               <Facebook size={18} />
+            </a>
+            <a href={LINKS.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-accent transition-colors">
+              <Youtube size={18} />
+            </a>
+            <a href={LINKS.tiktok} target="_blank" rel="noreferrer" aria-label="TikTok" className="hover:text-accent transition-colors">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.77 1.52V6.72a4.85 4.85 0 01-1-.03z" />
+              </svg>
             </a>
           </div>
         </div>

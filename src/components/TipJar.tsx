@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Coffee, Heart, X, Copy, Check, ExternalLink } from 'lucide-react';
+import { Heart, X, Copy, Check, ExternalLink, Music2 } from 'lucide-react';
 
 const HANDLE = 'fullmetalzcw';
 
@@ -50,7 +50,7 @@ export default function TipJar({ open, onClose }: Props) {
         audience: 'public',
         recipients: HANDLE,
         amount: String(numAmount),
-        note: 'Buy Zachary a coffee',
+        note: 'Supporting Zachary Walker Music',
       });
       return `https://venmo.com/?${params.toString()}`;
     }
@@ -89,11 +89,11 @@ export default function TipJar({ open, onClose }: Props) {
             <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center">
-                  <Coffee size={16} className="text-accent" />
+                  <Music2 size={16} className="text-accent" />
                 </div>
                 <div>
-                  <h3 id="tip-title" className="font-display text-xl text-text-main tracking-tight">Buy Me a Coffee</h3>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-text-muted/70 font-mono">Support the music</p>
+                  <h3 id="tip-title" className="font-display text-xl text-text-main tracking-tight">Support the Music</h3>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-text-muted/70 font-mono">Keep the songs coming</p>
                 </div>
               </div>
               <button

@@ -1,0 +1,4 @@
+# ads.txt for zacharywalkermusic.com
+# AdSense Publisher: ca-pub-5549687431053942
+
+google.com, pub-5549687431053942, DIRECT, f08c47fec0942fa0
