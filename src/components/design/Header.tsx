@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Coffee, Menu, X } from 'lucide-react';
+import { Heart, Menu, X } from 'lucide-react';
 
 const NAV_LINKS = [
   { href: '#releases', label: 'Releases' },
@@ -42,7 +42,7 @@ export default function Header({ onOpenTip }: Props) {
               onClick={onOpenTip}
               className="hidden sm:inline-flex items-center gap-2 text-text-muted hover:text-accent transition-colors text-xs uppercase tracking-widest"
             >
-              <Coffee size={14} /> Tip
+              <Heart size={14} /> Support
             </button>
           )}
           <button
@@ -74,7 +74,7 @@ export default function Header({ onOpenTip }: Props) {
               onClick={() => { onOpenTip(); setMobileOpen(false); }}
               className="flex items-center gap-2 text-accent text-sm tracking-wide py-1"
             >
-              <Coffee size={14} /> Buy Me a Coffee
+              <Heart size={14} /> Support the Music
             </button>
           )}
         </nav>

@@ -4,12 +4,20 @@
 -- Subscribers (newsletter)
 CREATE TABLE IF NOT EXISTS subscribers (
   id BIGSERIAL PRIMARY KEY,
+  name TEXT,
   email TEXT NOT NULL UNIQUE,
   source TEXT,
   ip TEXT,
   user_agent TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Add name column if upgrading from older schema
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='subscribers' AND column_name='name') THEN
+    ALTER TABLE subscribers ADD COLUMN name TEXT;
+  END IF;
+END $$;
 
 -- Bookings inquiries
 CREATE TABLE IF NOT EXISTS bookings (

@@ -36,6 +36,21 @@ function saveConsent(prefs: Omit<ConsentPrefs, 'essential' | 'timestamp' | 'vers
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(full));
   window.dispatchEvent(new CustomEvent('zw:consent', { detail: full }));
+
+  // Update GTM/gtag consent mode in real-time.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const _gtag = (window as any).gtag;
+    if (typeof _gtag === 'function') {
+      _gtag('consent', 'update', {
+        analytics_storage: full.analytics ? 'granted' : 'denied',
+        ad_storage: full.marketing ? 'granted' : 'denied',
+        ad_user_data: full.marketing ? 'granted' : 'denied',
+        ad_personalization: full.marketing ? 'granted' : 'denied',
+      });
+    }
+  } catch { /* non-critical */ }
+
   // Fire-and-forget remote audit log (non-blocking).
   void logConsent({ analytics: full.analytics, marketing: full.marketing });
   return full;

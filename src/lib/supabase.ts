@@ -28,6 +28,7 @@ export const isEmail = (v: unknown): v is string =>
   typeof v === 'string' && EMAIL_RE.test(v.trim());
 
 export interface SubscribeArgs {
+  name: string;
   email: string;
   source?: string;
 }
@@ -57,11 +58,13 @@ export interface ConsentArgs {
   fingerprint?: string;
 }
 
-export async function subscribeNewsletter({ email, source = 'web' }: SubscribeArgs) {
+export async function subscribeNewsletter({ name, email, source = 'web' }: SubscribeArgs) {
+  if (!name?.trim()) throw new Error('Please enter your name.');
   if (!isEmail(email)) throw new Error('Please enter a valid email address.');
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent?.slice(0, 500) || null : null;
 
   const { error } = await supabase().from('subscribers').insert({
+    name: name.trim(),
     email: email.trim().toLowerCase(),
     source,
     user_agent: userAgent,
@@ -73,6 +76,14 @@ export async function subscribeNewsletter({ email, source = 'web' }: SubscribeAr
     }
     throw new Error(error.message || 'Could not subscribe right now.');
   }
+
+  // Trigger thank-you email via Supabase Edge Function (fire-and-forget, non-blocking).
+  try {
+    await supabase().functions.invoke('send-welcome-email', {
+      body: { name: name.trim(), email: email.trim().toLowerCase() },
+    });
+  } catch { /* non-critical — email failure does not break subscription */ }
+
   return { ok: true, alreadySubscribed: false };
 }
 
