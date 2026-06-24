@@ -59,9 +59,12 @@ export interface ConsentArgs {
 
 export async function subscribeNewsletter({ email, source = 'web' }: SubscribeArgs) {
   if (!isEmail(email)) throw new Error('Please enter a valid email address.');
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent?.slice(0, 500) || null : null;
+
   const { error } = await supabase().from('subscribers').insert({
     email: email.trim().toLowerCase(),
     source,
+    user_agent: userAgent,
   });
   if (error) {
     // Unique constraint violation → treat as already-subscribed.

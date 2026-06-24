@@ -57,24 +57,30 @@ CREATE INDEX IF NOT EXISTS idx_subscribers_email_lower ON subscribers (lower(ema
 CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings (created_at);
 CREATE INDEX IF NOT EXISTS idx_contact_created_at ON contact_messages (created_at);
 
--- Example Row Level Security (RLS) policies (OPTIONAL)
--- Only enable RLS if you plan to allow direct client access (e.g., via JWT-authenticated role).
--- For server-only usage (server uses full DB role), you generally do NOT enable RLS.
--- Uncomment and adapt if needed:
+-- Row Level Security (RLS) for direct client-side inserts (using anon key)
+-- This project uses Supabase client directly from the browser for forms (newsletter, booking, contact, consent).
+-- Enable RLS and allow public (anon) inserts. Keep other operations restricted.
 
--- ALTER TABLE subscribers ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY subscribers_insert_policy ON subscribers
---   FOR INSERT
---   USING (true)
---   WITH CHECK (true);
+ALTER TABLE subscribers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow anonymous insert to subscribers" ON subscribers
+  FOR INSERT
+  WITH CHECK (true);
 
--- ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY bookings_insert_policy ON bookings
---   FOR INSERT
---   USING (true)
---   WITH CHECK (true);
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow anonymous insert to bookings" ON bookings
+  FOR INSERT
+  WITH CHECK (true);
 
--- You can also create a dedicated limited role for client access and grant only INSERT:
--- CREATE ROLE web_role NOINHERIT;
--- GRANT INSERT ON TABLE subscribers TO web_role;
--- (Then configure your client to connect as web_role with limited permissions.)
+ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow anonymous insert to contact_messages" ON contact_messages
+  FOR INSERT
+  WITH CHECK (true);
+
+ALTER TABLE consent_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow anonymous insert to consent_log" ON consent_log
+  FOR INSERT
+  WITH CHECK (true);
+
+-- Note: For production, you may want more restrictive policies.
+-- These permissive INSERT policies allow the public newsletter/booking forms (via anon key).
+-- Run this migration (or apply the ALTER/CREATE POLICY statements) on your Supabase project.
