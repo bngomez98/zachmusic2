@@ -27,8 +27,8 @@ export default function About() {
             Under the mentorship of Dr. John Leavitt, Zachary began shaping his natural vocal ability into more
             intentional and expressive performances. That growth helped earn him a scholarship to MidAmerica
             Nazarene University, where he joined the Heritage Choir as a freshman &mdash; a rare achievement so
-            early in his training. There, he refined his technique, expanded his versatility, and developed the
-            control behind his three-octave range.
+            early in his training.             There, he refined his technique, expanded his versatility, and deepened his
+            expressive range as a vocalist.
           </p>
           <p>
             After college, Zachary went through a difficult period that included homelessness. He spent time
@@ -65,7 +65,7 @@ export default function About() {
 
         <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8 border-t border-text-muted/10 max-w-2xl mx-auto">
           <Fact label="Based" value="Topeka, KS" />
-          <Fact label="Range" value="Three Octaves" />
+          <Fact label="Style" value="Singer-Songwriter" />
           <Fact label="Format" value="Solo Acoustic" />
           <Fact label="EP Expected" value="Late 2026" />
         </div>
