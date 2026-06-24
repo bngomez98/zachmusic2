@@ -28,7 +28,7 @@ export default function Hero() {
         preload="auto"
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-        style={{ objectPosition: '50% 35%' }}
+        style={{ objectPosition: '50% 68%' }}
       />
 
       {/* Radial vignette — darkens edges, keeps performer area bright */}
