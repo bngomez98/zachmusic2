@@ -1,12 +1,12 @@
 // Vercel Serverless Function: /api/booking
 // Handles booking requests: validate, insert to Supabase, send confirmation via Resend if configured.
 
-import { createClient } from '@supabase/supabase-js';
+import { PostgrestClient } from '@supabase/postgrest-js';
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-const SUPABASE_URL = 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb';
+const REST_URL = 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1';
 const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
 const RESEND_KEY = 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
 const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
@@ -46,12 +46,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Message too long' });
   }
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
+  if (!REST_URL || !SERVICE_KEY) {
     return res.status(500).json({ error: 'Server not configured' });
   }
 
-  const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
+  const postgrest = new PostgrestClient(REST_URL, {
+    headers: {
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+    },
   });
 
   const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
@@ -87,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   try {
-    const { error } = await supabase.from('bookings').insert(payload);
+    const { error } = await postgrest.from('bookings').insert(payload);
     if (error) {
       console.error('booking insert error', error);
       return res.status(500).json({ error: 'Failed to submit inquiry' });

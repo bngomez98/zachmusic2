@@ -1,12 +1,12 @@
 // Vercel Serverless Function: /api/subscribe
 // Handles newsletter signup: validate, insert to Supabase, send welcome via Resend if configured.
 
-import { createClient } from '@supabase/supabase-js';
+import { PostgrestClient } from '@supabase/postgrest-js';
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-const SUPABASE_URL = 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb';
+const REST_URL = 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1';
 const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
 const RESEND_KEY = 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
 const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
@@ -41,12 +41,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const name = typeof rawName === 'string' ? rawName.trim() : null;
   const src = typeof source === 'string' ? source.trim() || 'footer' : 'footer';
 
-  if (!SUPABASE_URL || !SERVICE_KEY) {
+  if (!REST_URL || !SERVICE_KEY) {
     return res.status(500).json({ error: 'Server not configured' });
   }
 
-  const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
+  const postgrest = new PostgrestClient(REST_URL, {
+    headers: {
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+    },
   });
 
   const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
@@ -66,14 +69,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { error, data } = await supabase
+    const { error, data } = await postgrest
       .from('subscribers')
       .insert({ name: name || null, email, source: src, ip, user_agent: userAgent })
       .select('id')
       .maybeSingle();
 
     if (error) {
-      if (error.code === '23505' || (error.message || '').toLowerCase().includes('duplicate')) {
+      const msg = (error as any)?.code || (error as any)?.message || '';
+      if (msg === '23505' || String(msg).toLowerCase().includes('duplicate') || String(msg).includes('unique')) {
         return res.status(200).json({ message: 'Already subscribed' });
       }
       console.error('subscribe insert error', error);
