@@ -213,6 +213,7 @@ async function startServer() {
     </style>
   </head>
   <body dir="ltr" lang="en" style="background-color:#7e8a9a">
+    <!--$--><!--html--><!--head--><!--body-->
     <table
       border="0"
       width="100%"
@@ -240,13 +241,12 @@ async function startServer() {
                     style="padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
                     <p
                       style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
-                      Hi ${displayName},<br /><br />
                       Thank you for signing up for the newsletter! This project
                       is currently under development. Stay tuned, release is
                       July 1st, 2026!
                     </p>
                     <img
-                      alt="Zachary Walker"
+                      alt=""
                       height="354"
                       src="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1"
                       style="display:block;outline:none;border:none;text-decoration:none;max-width:100%;border-radius:8px;height:auto"
@@ -263,6 +263,7 @@ async function startServer() {
         </tr>
       </tbody>
     </table>
+    <!--/$-->
   </body>
 </html>`;
 

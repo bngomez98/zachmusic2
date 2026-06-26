@@ -70,10 +70,20 @@ Use the Supabase dashboard SQL editor or run migrations locally with the provide
 
 ## Emails
 
-- Welcome email on newsletter signup
+- Welcome email on newsletter signup (using the provided HTML template)
 - Confirmation email on booking request
 
 Handled via official Resend SDK in the API routes when `RESEND_API_KEY` is present.
+
+### Resend Domain Verification (for zacharywalkermusic.com)
+
+To send from custom domain, add these DNS records (Resend will add via Cloudflare):
+
+- MX: send -> feedback-smtp.us-east-1.amazonses.com (priority 10, TTL 1hr, DNS only)
+- TXT: resend._domainkey -> "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDVG6hnuFdDP9y9CZWGPOeE2JCVT7UcneMV/Jb91tGwZKYtSWiWpHHEJKv4frQfqQcPQB7ZIw2aOsVhlIoQHIcqvnHipc6fUkCnHL8k5X/4JLWCiy0Fx5jWIY8lXHp+FtXgsD7A3JuG+8K0O0ZNaZteL9cIWwsxbK+eRZgcjtHLawIDAQAB" (TTL 1hr, DNS only)
+- TXT: send -> "v=spf1 include:amazonses.com ~all" (TTL 1hr, DNS only)
+
+The welcome email HTML is embedded in the production code.
 
 Repository
 
