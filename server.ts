@@ -4,6 +4,7 @@ import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
+import { PostgrestClient } from "@supabase/postgrest-js";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 // @ts-ignore - resend will be installed on Vercel and in proper pnpm env
 import { Resend } from "resend";
@@ -12,7 +13,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 dotenv.config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
 const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
 const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
@@ -29,15 +30,18 @@ async function verifyToken(token?: string) {
 }
 
 let pool: Pool | null = null;
-let supabaseAdmin: SupabaseClient | null = null;
+let supabaseAdmin: any = null;  // PostgrestClient
 
 if (DATABASE_URL) {
   pool = new Pool({
     connectionString: DATABASE_URL,
   });
 } else if (SUPABASE_URL && SERVICE_KEY) {
-  supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
+  supabaseAdmin = new PostgrestClient(SUPABASE_URL, {
+    headers: {
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+    },
   });
 } else {
   console.warn("No DATABASE_URL or Supabase service key. /api routes will fail until configured.");
