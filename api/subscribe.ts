@@ -4,10 +4,24 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-const SUPABASE_URL = 'https://ihnebngdsnhyniaskxiq.supabase.co';
+const SUPABASE_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb';
 const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
 const RESEND_KEY = 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
+const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
+const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
+
+async function verifyToken(token?: string) {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    return payload;
+  } catch (e) {
+    console.error('JWT verify failed', e);
+    return null;
+  }
+}
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -26,6 +40,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   const name = typeof rawName === 'string' ? rawName.trim() : null;
   const src = typeof source === 'string' ? source.trim() || 'footer' : 'footer';
+
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+  const token = authHeader ? (typeof authHeader === 'string' ? authHeader.replace('Bearer ', '') : undefined) : undefined;
+  const verified = await verifyToken(token);
+  if (verified) {
+    console.log('Verified subscriber request from:', verified.sub || verified.email);
+  }
 
   if (!SUPABASE_URL || !SERVICE_KEY) {
     return res.status(500).json({ error: 'Server not configured' });

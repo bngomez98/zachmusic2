@@ -7,12 +7,26 @@ import { createServer as createViteServer } from "vite";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 // @ts-ignore - resend will be installed on Vercel and in proper pnpm env
 import { Resend } from "resend";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 dotenv.config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ihnebngdsnhyniaskxiq.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
+const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
+const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
+
+async function verifyToken(token?: string) {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    return payload;
+  } catch (e) {
+    console.error('JWT verify failed', e);
+    return null;
+  }
+}
 
 let pool: Pool | null = null;
 let supabaseAdmin: SupabaseClient | null = null;
@@ -149,6 +163,13 @@ async function startServer() {
 
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
+
+    const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+    const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
+    const verified = await verifyToken(token);
+    if (verified) {
+      console.log("Verified subscribe request from:", verified.sub || verified.email);
+    }
 
     try {
       let isNew = true;
@@ -305,6 +326,14 @@ async function startServer() {
     }
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
+
+    const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+    const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
+    const verified = await verifyToken(token);
+    if (verified) {
+      console.log("Verified booking request from:", verified.sub || verified.email);
+    }
+
     try {
       if (pool) {
         await pool.query(
