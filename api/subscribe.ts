@@ -55,19 +55,97 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const isNew = !!data;
 
-    // Welcome email (best effort)
+    // Welcome email (best effort) - using provided production template
     if (RESEND_KEY && isNew) {
       const display = name || 'there';
       const resend = new Resend(RESEND_KEY);
+
+      const welcomeHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="width=device-width" name="viewport" />
+    <link
+      rel="preload"
+      as="image"
+      href="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" />
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta
+      content="telephone=no,address=no,email=no,date=no,url=no"
+      name="format-detection" />
+    <style>
+      @media (prefers-color-scheme: dark){li::marker{color:#c4c4c4}}
+    </style>
+    <style>
+
+      @media (prefers-color-scheme: dark) {
+
+      }
+    </style>
+  </head>
+  <body dir="ltr" lang="en" style="background-color:#7e8a9a">
+    <table
+      border="0"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      align="center">
+      <tbody>
+        <tr>
+          <td
+            dir="ltr"
+            lang="en"
+            style="font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif;font-size:1em;min-height:100%;line-height:155%;background-color:#7e8a9a">
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="max-width:600px;align:center;width:100%;height:200px;color:#000000;background-color:#d7dee9;border-radius:0px;border-color:#000000;line-height:155%">
+              <tbody>
+                <tr style="width:100%">
+                  <td
+                    style="padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
+                    <p
+                      style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
+                      Hi ${display},<br /><br />
+                      Thank you for signing up for the newsletter! This project
+                      is currently under development. Stay tuned, release is
+                      July 1st, 2026!
+                    </p>
+                    <img
+                      alt="Zachary Walker"
+                      height="354"
+                      src="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1"
+                      style="display:block;outline:none;border:none;text-decoration:none;max-width:100%;border-radius:8px;height:auto"
+                      width="354" />
+                    <p
+                      style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
+                      <br />
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>`;
 
       resend.emails.send({
         from: 'Zachary Walker <no-reply@zacharywalkermusic.com>',
         to: email,
         subject: 'Welcome to the Newsletter',
-        html: `<p>Hi ${display},</p><p>Thanks for subscribing to Zachary Walker updates. You'll hear about new releases, shows, and exclusives.</p><p>— Zachary</p>`,
+        html: welcomeHtml,
       }).then(({ data, error }) => {
         if (error) console.error('Resend welcome error:', error);
-        // else console.log('Welcome email sent:', data?.id);
       }).catch((e) => console.error('resend welcome error', e));
     }
 
