@@ -57,11 +57,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').toString().split(',')[0].trim();
 
-  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-  const token = authHeader ? (typeof authHeader === 'string' ? authHeader.replace('Bearer ', '') : undefined) : undefined;
-  const verified = await verifyToken(token);
-  if (verified) {
-    console.log('Verified booking request from:', verified.sub || verified.email);
+  // JWT verification (optional, for future auth; doesn't fail the request if no token or invalid)
+  try {
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    const token = authHeader ? (typeof authHeader === 'string' ? authHeader.replace('Bearer ', '') : undefined) : undefined;
+    const verified = await verifyToken(token);
+    if (verified) {
+      console.log('Verified booking request from:', verified.sub || verified.email);
+    }
+  } catch (verifyErr) {
+    console.error('JWT verification error (non-fatal):', verifyErr);
+    // Continue without auth
   }
 
   const payload = {

@@ -41,13 +41,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const name = typeof rawName === 'string' ? rawName.trim() : null;
   const src = typeof source === 'string' ? source.trim() || 'footer' : 'footer';
 
-  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-  const token = authHeader ? (typeof authHeader === 'string' ? authHeader.replace('Bearer ', '') : undefined) : undefined;
-  const verified = await verifyToken(token);
-  if (verified) {
-    console.log('Verified subscriber request from:', verified.sub || verified.email);
-  }
-
   if (!SUPABASE_URL || !SERVICE_KEY) {
     return res.status(500).json({ error: 'Server not configured' });
   }
@@ -58,6 +51,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').toString().split(',')[0].trim();
+
+  // JWT verification (optional, for future auth; doesn't fail the request if no token or invalid)
+  try {
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    const token = authHeader ? (typeof authHeader === 'string' ? authHeader.replace('Bearer ', '') : undefined) : undefined;
+    const verified = await verifyToken(token);
+    if (verified) {
+      console.log('Verified subscriber request from:', verified.sub || verified.email);
+    }
+  } catch (verifyErr) {
+    console.error('JWT verification error (non-fatal):', verifyErr);
+    // Continue without auth
+  }
 
   try {
     const { error, data } = await supabase

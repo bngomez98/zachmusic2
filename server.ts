@@ -164,11 +164,16 @@ async function startServer() {
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
 
-    const authHeader = req.headers["authorization"] || req.headers["Authorization"];
-    const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
-    const verified = await verifyToken(token);
-    if (verified) {
-      console.log("Verified subscribe request from:", verified.sub || verified.email);
+    // JWT verification (optional, non-fatal)
+    try {
+      const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+      const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
+      const verified = await verifyToken(token);
+      if (verified) {
+        console.log("Verified subscribe request from:", verified.sub || verified.email);
+      }
+    } catch (verifyErr) {
+      console.error("JWT verification error (non-fatal):", verifyErr);
     }
 
     try {
@@ -327,11 +332,16 @@ async function startServer() {
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
 
-    const authHeader = req.headers["authorization"] || req.headers["Authorization"];
-    const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
-    const verified = await verifyToken(token);
-    if (verified) {
-      console.log("Verified booking request from:", verified.sub || verified.email);
+    // JWT verification (optional, non-fatal)
+    try {
+      const authHeader = req.headers["authorization"] || req.headers["Authorization"];
+      const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
+      const verified = await verifyToken(token);
+      if (verified) {
+        console.log("Verified booking request from:", verified.sub || verified.email);
+      }
+    } catch (verifyErr) {
+      console.error("JWT verification error (non-fatal):", verifyErr);
     }
 
     try {
