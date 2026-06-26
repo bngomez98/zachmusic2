@@ -12,7 +12,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 dotenv.config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
 const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
 const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
