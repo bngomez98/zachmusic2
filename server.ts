@@ -4,7 +4,6 @@ import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-import { PostgrestClient } from "@supabase/postgrest-js";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 // @ts-ignore - resend will be installed on Vercel and in proper pnpm env
 import { Resend } from "resend";
@@ -37,11 +36,8 @@ if (DATABASE_URL) {
     connectionString: DATABASE_URL,
   });
 } else if (SUPABASE_URL && SERVICE_KEY) {
-  supabaseAdmin = new PostgrestClient(SUPABASE_URL, {
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-    },
+  supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 } else {
   console.warn("No DATABASE_URL or Supabase service key. /api routes will fail until configured.");
