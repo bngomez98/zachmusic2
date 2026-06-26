@@ -60,7 +60,7 @@ After setting vars, redeploy.
 - `env.production` — build-time public config loaded by Vite for production
 - Never put service role keys or Resend key in VITE_ prefixed vars
 
-See the files for the current project Supabase URL and public anon key.
+See the files for the current project Neon REST URL (https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1) and public anon key.
 
 ## Database
 
