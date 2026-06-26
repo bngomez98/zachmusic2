@@ -11,8 +11,8 @@ import { Resend } from "resend";
 dotenv.config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ihnebngdsnhyniaskxiq.supabase.co';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
 
 let pool: Pool | null = null;
 let supabaseAdmin: SupabaseClient | null = null;
@@ -181,10 +181,11 @@ async function startServer() {
       }
 
       // Send welcome email (best effort)
-      if (process.env.RESEND_API_KEY && isNew) {
+      const effectiveResendKey = process.env.RESEND_API_KEY || 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
+      if (effectiveResendKey && isNew) {
         const toEmail = email;
         const displayName = name || "there";
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        const resend = new Resend(effectiveResendKey);
 
         resend.emails.send({
           from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
@@ -267,9 +268,10 @@ async function startServer() {
       }
 
       // Send confirmation email (best effort)
-      if (process.env.RESEND_API_KEY) {
+      const effectiveResendKey2 = process.env.RESEND_API_KEY || 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
+      if (effectiveResendKey2) {
         const displayName = b.name.trim();
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        const resend = new Resend(effectiveResendKey2);
 
         resend.emails.send({
           from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
