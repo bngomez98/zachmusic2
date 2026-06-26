@@ -4,119 +4,71 @@ import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-import { PostgrestClient } from "@supabase/postgrest-js";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-// @ts-ignore - resend will be installed on Vercel and in proper pnpm env
+// @ts-ignore
 import { Resend } from "resend";
-import { createRemoteJWKSet, jwtVerify } from "jose";
 
 dotenv.config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1';
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
-const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
-const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
-
-async function verifyToken(token?: string) {
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, JWKS);
-    return payload;
-  } catch (e) {
-    console.error('JWT verify failed', e);
-    return null;
-  }
-}
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 let pool: Pool | null = null;
-let supabaseAdmin: any = null;  // PostgrestClient
 
 if (DATABASE_URL) {
-  pool = new Pool({
-    connectionString: DATABASE_URL,
-  });
-} else if (SUPABASE_URL && SERVICE_KEY) {
-  supabaseAdmin = new PostgrestClient(SUPABASE_URL, {
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-    },
-  });
+  pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
 } else {
-  console.warn("No DATABASE_URL or Supabase service key. /api routes will fail until configured.");
+  console.warn("No DATABASE_URL set. /api routes will fail until configured.");
 }
 
 async function ensureSchema() {
-  if (pool) {
-    // Create a migration tracking table and required application tables (idempotent)
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS schema_migrations (
-        id BIGSERIAL PRIMARY KEY,
-        filename TEXT NOT NULL UNIQUE,
-        applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
-      );
-    `);
-
-    // Create application tables
-    const sql = `
-      CREATE TABLE IF NOT EXISTS subscribers (
-        id BIGSERIAL PRIMARY KEY,
-        name TEXT,
-        email TEXT NOT NULL UNIQUE,
-        source TEXT,
-        ip TEXT,
-        user_agent TEXT,
-        created_at TIMESTAMPTZ DEFAULT now()
-      );
-      ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS name TEXT;
-
-      CREATE TABLE IF NOT EXISTS bookings (
-        id BIGSERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        phone TEXT,
-        event_type TEXT,
-        event_date TEXT,
-        venue TEXT,
-        location TEXT,
-        hours TEXT,
-        budget TEXT,
-        message TEXT NOT NULL,
-        ip TEXT,
-        user_agent TEXT,
-        status TEXT DEFAULT 'new',
-        created_at TIMESTAMPTZ DEFAULT now()
-      );
-
-      CREATE TABLE IF NOT EXISTS contact_messages (
-        id BIGSERIAL PRIMARY KEY,
-        name TEXT,
-        email TEXT NOT NULL,
-        message TEXT NOT NULL,
-        ip TEXT,
-        user_agent TEXT,
-        created_at TIMESTAMPTZ DEFAULT now()
-      );
-
-      CREATE TABLE IF NOT EXISTS consent_log (
-        id BIGSERIAL PRIMARY KEY,
-        fingerprint TEXT,
-        analytics INTEGER NOT NULL,
-        marketing INTEGER NOT NULL,
-        ip TEXT,
-        user_agent TEXT,
-        created_at TIMESTAMPTZ DEFAULT now()
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_subscribers_email_lower ON subscribers (lower(email));
-    `;
-
-    await pool.query(sql);
-  } else if (supabaseAdmin) {
-    // For Supabase service, tables are expected to exist (use migration or dashboard).
-    // We can optionally ensure via rpc or skip. Rely on migration file for now.
-  }
+  if (!pool) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS subscribers (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT,
+      email TEXT NOT NULL UNIQUE,
+      source TEXT,
+      ip TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS bookings (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      event_type TEXT,
+      event_date TEXT,
+      venue TEXT,
+      location TEXT,
+      hours TEXT,
+      budget TEXT,
+      message TEXT NOT NULL,
+      ip TEXT,
+      user_agent TEXT,
+      status TEXT DEFAULT 'new',
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS contact_messages (
+      id BIGSERIAL PRIMARY KEY,
+      name TEXT,
+      email TEXT NOT NULL,
+      message TEXT NOT NULL,
+      ip TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS consent_log (
+      id BIGSERIAL PRIMARY KEY,
+      fingerprint TEXT,
+      analytics INTEGER NOT NULL,
+      marketing INTEGER NOT NULL,
+      ip TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS idx_subscribers_email_lower ON subscribers (lower(email));
+  `);
 }
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -125,6 +77,41 @@ function clientIp(req: express.Request): string {
   const fwd = (req.headers["x-forwarded-for"] || "").toString();
   return (fwd.split(",")[0] || req.socket.remoteAddress || "").trim();
 }
+
+const WELCOME_HTML = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+  <head>
+    <meta content="width=device-width" name="viewport" />
+    <link rel="preload" as="image" href="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" />
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
+    <style>@media (prefers-color-scheme: dark){li::marker{color:#c4c4c4}}</style>
+  </head>
+  <body dir="ltr" lang="en" style="background-color:#7e8a9a">
+    <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center">
+      <tbody>
+        <tr>
+          <td dir="ltr" lang="en" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif;font-size:1em;min-height:100%;line-height:155%;background-color:#7e8a9a">
+            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;color:#000000;background-color:#d7dee9;border-radius:0px;line-height:155%">
+              <tbody>
+                <tr style="width:100%">
+                  <td style="padding:0">
+                    <p style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
+                      Thank you for signing up for the newsletter! This project is currently under development. Stay tuned, release is July 1st, 2026!
+                    </p>
+                    <img alt="" height="354" src="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" style="display:block;outline:none;border:none;text-decoration:none;max-width:100%;border-radius:8px;height:auto" width="354" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>`;
 
 async function startServer() {
   await ensureSchema();
@@ -138,7 +125,8 @@ async function startServer() {
 
   // Simple in-memory rate limit (per-IP per-endpoint)
   const rateBuckets = new Map<string, { count: number; ts: number }>();
-  const rateLimit = (endpoint: string, max: number, windowMs: number) =>
+  const rateLimit =
+    (endpoint: string, max: number, windowMs: number) =>
     (req: express.Request, res: express.Response, next: express.NextFunction) => {
       const key = `${endpoint}:${clientIp(req)}`;
       const now = Date.now();
@@ -163,153 +151,38 @@ async function startServer() {
     const email = rawEmail.trim().toLowerCase();
     if (!EMAIL_RE.test(email)) return res.status(400).json({ error: "Valid email is required" });
     const name = (typeof rawName === "string" ? rawName.trim() : "") || null;
-    const sourceValue = typeof source === "string" ? source.trim() || "footer" : "footer";
-
+    const src = typeof source === "string" ? source.trim() || "footer" : "footer";
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
 
-    // JWT verification (optional, non-fatal)
-    try {
-      const authHeader = req.headers["authorization"] || req.headers["Authorization"];
-      const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
-      const verified = await verifyToken(token);
-      if (verified) {
-        console.log("Verified subscribe request from:", verified.sub || verified.email);
-      }
-    } catch (verifyErr) {
-      console.error("JWT verification error (non-fatal):", verifyErr);
-    }
+    if (!pool) return res.status(500).json({ error: "Database not configured" });
 
     try {
-      let isNew = true;
-      if (pool) {
-        const result = await pool.query(
-          `INSERT INTO subscribers (name, email, source, ip, user_agent)
-           VALUES ($1, $2, $3, $4, $5)
-           ON CONFLICT (email) DO NOTHING
-           RETURNING id`,
-          [name, email, sourceValue, ip, ua]
-        );
-        isNew = result.rowCount === 1;
-      } else if (supabaseAdmin) {
-        const { error, data } = await supabaseAdmin
-          .from('subscribers')
-          .insert({ name, email, source: sourceValue, ip, user_agent: ua })
-          .select('id')
-          .maybeSingle();
-        if (error) {
-          if (error.code === '23505' || (error.message || '').toLowerCase().includes('duplicate')) {
-            isNew = false;
-          } else {
-            throw error;
-          }
-        } else {
-          isNew = !!data;
-        }
-      } else {
-        return res.status(500).json({ error: "Database not configured" });
+      const result = await pool.query(
+        `INSERT INTO subscribers (name, email, source, ip, user_agent)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (email) DO NOTHING
+         RETURNING id`,
+        [name, email, src, ip, ua],
+      );
+      const isNew = result.rowCount === 1;
+
+      if (RESEND_API_KEY && isNew) {
+        const resend = new Resend(RESEND_API_KEY);
+        resend.emails
+          .send({
+            from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
+            to: email,
+            subject: "Welcome to the Newsletter",
+            html: WELCOME_HTML,
+          })
+          .then(({ error }: any) => {
+            if (error) console.error("Resend subscribe error:", error);
+          })
+          .catch((e: any) => console.error("resend subscribe email error", e));
       }
 
-      // Send welcome email (best effort)
-      const effectiveResendKey = process.env.RESEND_API_KEY || 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
-      if (effectiveResendKey && isNew) {
-        const toEmail = email;
-        const displayName = name || "there";
-        const resend = new Resend(effectiveResendKey);
-
-        const welcomeHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html dir="ltr" lang="en">
-  <head>
-    <meta content="width=device-width" name="viewport" />
-    <link
-      rel="preload"
-      as="image"
-      href="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" />
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <meta name="x-apple-disable-message-reformatting" />
-    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-    <meta name="x-apple-disable-message-reformatting" />
-    <meta
-      content="telephone=no,address=no,email=no,date=no,url=no"
-      name="format-detection" />
-    <style>
-      @media (prefers-color-scheme: dark){li::marker{color:#c4c4c4}}
-    </style>
-    <style>
-
-      @media (prefers-color-scheme: dark) {
-
-      }
-    </style>
-  </head>
-  <body dir="ltr" lang="en" style="background-color:#7e8a9a">
-    <!--$--><!--html--><!--head--><!--body-->
-    <table
-      border="0"
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      role="presentation"
-      align="center">
-      <tbody>
-        <tr>
-          <td
-            dir="ltr"
-            lang="en"
-            style="font-family:-apple-system, BlinkMacSystemFont, &#x27;Segoe UI&#x27;, &#x27;Roboto&#x27;, &#x27;Oxygen&#x27;, &#x27;Ubuntu&#x27;, &#x27;Cantarell&#x27;, &#x27;Fira Sans&#x27;, &#x27;Droid Sans&#x27;, &#x27;Helvetica Neue&#x27;, sans-serif;font-size:1em;min-height:100%;line-height:155%;background-color:#7e8a9a">
-            <table
-              align="center"
-              width="100%"
-              border="0"
-              cellpadding="0"
-              cellspacing="0"
-              role="presentation"
-              style="max-width:600px;align:center;width:100%;height:200px;color:#000000;background-color:#d7dee9;border-radius:0px;border-color:#000000;line-height:155%">
-              <tbody>
-                <tr style="width:100%">
-                  <td
-                    style="padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
-                    <p
-                      style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
-                      Thank you for signing up for the newsletter! This project
-                      is currently under development. Stay tuned, release is
-                      July 1st, 2026!
-                    </p>
-                    <img
-                      alt=""
-                      height="354"
-                      src="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1"
-                      style="display:block;outline:none;border:none;text-decoration:none;max-width:100%;border-radius:8px;height:auto"
-                      width="354" />
-                    <p
-                      style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
-                      <br />
-                    </p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <!--/$-->
-  </body>
-</html>`;
-
-        resend.emails.send({
-          from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
-          to: toEmail,
-          subject: "Welcome to the Newsletter",
-          html: welcomeHtml,
-        }).then(({ data, error }: any) => {
-          if (error) console.error("Resend subscribe error:", error);
-        }).catch((e: any) => console.error("resend subscribe email error", e));
-      }
-
-      if (!isNew) {
-        return res.status(200).json({ message: "Already subscribed" });
-      }
+      if (!isNew) return res.status(200).json({ message: "Already subscribed" });
       return res.status(201).json({ message: "Successfully subscribed" });
     } catch (err) {
       console.error("subscribe error", err);
@@ -327,86 +200,51 @@ async function startServer() {
       }
     }
     const email = b.email.trim().toLowerCase();
-    if (!EMAIL_RE.test(email)) {
-      return res.status(400).json({ error: "Valid email is required" });
-    }
-    if ((b.message || "").length > 5000) {
-      return res.status(400).json({ error: "Message too long" });
-    }
+    if (!EMAIL_RE.test(email)) return res.status(400).json({ error: "Valid email is required" });
+    if ((b.message || "").length > 5000) return res.status(400).json({ error: "Message too long" });
+
+    if (!pool) return res.status(500).json({ error: "Database not configured" });
+
     const ip = clientIp(req);
     const ua = req.get("user-agent") || "";
 
-    // JWT verification (optional, non-fatal)
     try {
-      const authHeader = req.headers["authorization"] || req.headers["Authorization"];
-      const token = authHeader ? (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace("Bearer ", "") : undefined;
-      const verified = await verifyToken(token);
-      if (verified) {
-        console.log("Verified booking request from:", verified.sub || verified.email);
-      }
-    } catch (verifyErr) {
-      console.error("JWT verification error (non-fatal):", verifyErr);
-    }
-
-    try {
-      if (pool) {
-        await pool.query(
-          `INSERT INTO bookings
-            (name, email, phone, event_type, event_date, venue, location, hours, budget, message, ip, user_agent)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-          [
-            b.name.trim(),
-            email,
-            b.phone?.trim() || null,
-            b.eventType?.trim() || null,
-            b.eventDate?.trim() || null,
-            b.venue?.trim() || null,
-            b.location?.trim() || null,
-            b.hours?.trim() || null,
-            b.budget?.trim() || null,
-            b.message.trim(),
-            ip,
-            ua
-          ]
-        );
-      } else if (supabaseAdmin) {
-        const { error } = await supabaseAdmin.from('bookings').insert({
-          name: b.name.trim(),
+      await pool.query(
+        `INSERT INTO bookings
+          (name, email, phone, event_type, event_date, venue, location, hours, budget, message, ip, user_agent, status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'new')`,
+        [
+          b.name.trim(),
           email,
-          phone: b.phone?.trim() || null,
-          event_type: b.eventType?.trim() || null,
-          event_date: b.eventDate?.trim() || null,
-          venue: b.venue?.trim() || null,
-          location: b.location?.trim() || null,
-          hours: b.hours?.trim() || null,
-          budget: b.budget?.trim() || null,
-          message: b.message.trim(),
+          b.phone?.trim() || null,
+          b.eventType?.trim() || null,
+          b.eventDate?.trim() || null,
+          b.venue?.trim() || null,
+          b.location?.trim() || null,
+          b.hours?.trim() || null,
+          b.budget?.trim() || null,
+          b.message.trim(),
           ip,
-          user_agent: ua,
-          status: 'new',
-        });
-        if (error) throw error;
-      } else {
-        return res.status(500).json({ error: "Database not configured" });
-      }
+          ua,
+        ],
+      );
 
-      // Send confirmation email (best effort)
-      const effectiveResendKey2 = process.env.RESEND_API_KEY || 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
-      if (effectiveResendKey2) {
-        const displayName = b.name.trim();
-        const resend = new Resend(effectiveResendKey2);
-
-        resend.emails.send({
-          from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
-          to: email,
-          subject: "Booking Inquiry Received",
-          html: `<p>Hi ${displayName},</p>
+      if (RESEND_API_KEY) {
+        const resend = new Resend(RESEND_API_KEY);
+        resend.emails
+          .send({
+            from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
+            to: email,
+            subject: "Booking Inquiry Received",
+            html: `<p>Hi ${b.name.trim()},</p>
 <p>Thanks for your booking inquiry. I'll personally review the details and reply within 48 hours.</p>
-<p>Event: ${b.eventDate || ''} — ${b.eventType || ''}</p>
+<p>Event: ${b.eventDate || ""} — ${b.eventType || ""}</p>
 <p>— Zachary Walker</p>`,
-        }).then(({ data, error }: any) => {
-          if (error) console.error("Resend booking error:", error);
-        }).catch((e: any) => console.error("resend booking email error", e));
+          })
+          .then(({ error }: any) => {
+            if (error) console.error("Resend booking error:", error);
+          })
+          .catch((e: any) => console.error("resend booking email error", e));
       }
 
       res.status(201).json({ message: "Booking inquiry received" });
@@ -419,27 +257,20 @@ async function startServer() {
   // ---------- Contact ----------
   app.post("/api/contact", rateLimit("contact", 6, 60_000), async (req, res) => {
     const name = typeof req.body?.name === "string" ? req.body.name.trim() : null;
-    const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
-    const message = typeof req.body?.message === "string" ? req.body.message.trim() : "";
-    if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: "Valid email is required" });
+    const email =
+      typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    const message =
+      typeof req.body?.message === "string" ? req.body.message.trim() : "";
+    if (!email || !EMAIL_RE.test(email))
+      return res.status(400).json({ error: "Valid email is required" });
     if (!message) return res.status(400).json({ error: "Message is required" });
+    if (!pool) return res.status(500).json({ error: "Database not configured" });
+
     try {
-      if (pool) {
-        await pool.query(
-          "INSERT INTO contact_messages (name, email, message, ip, user_agent) VALUES ($1, $2, $3, $4, $5)",
-          [name || null, email, message, clientIp(req), req.get("user-agent") || ""]
-        );
-      } else if (supabaseAdmin) {
-        await supabaseAdmin.from('contact_messages').insert({
-          name: name || null,
-          email,
-          message,
-          ip: clientIp(req),
-          user_agent: req.get("user-agent") || "",
-        });
-      } else {
-        return res.status(500).json({ error: "Database not configured" });
-      }
+      await pool.query(
+        "INSERT INTO contact_messages (name, email, message, ip, user_agent) VALUES ($1, $2, $3, $4, $5)",
+        [name || null, email, message, clientIp(req), req.get("user-agent") || ""],
+      );
       res.status(201).json({ message: "Message received" });
     } catch (err) {
       console.error("contact error", err);
@@ -450,23 +281,18 @@ async function startServer() {
   // ---------- Consent log ----------
   app.post("/api/consent", rateLimit("consent", 20, 60_000), async (req, res) => {
     const { fingerprint, analytics, marketing } = req.body || {};
+    if (!pool) return res.status(500).json({ error: "Database not configured" });
     try {
-      if (pool) {
-        await pool.query(
-          "INSERT INTO consent_log (fingerprint, analytics, marketing, ip, user_agent) VALUES ($1, $2, $3, $4, $5)",
-          [(fingerprint || "").toString().slice(0, 64), analytics ? 1 : 0, marketing ? 1 : 0, clientIp(req), req.get("user-agent") || ""]
-        );
-      } else if (supabaseAdmin) {
-        await supabaseAdmin.from('consent_log').insert({
-          fingerprint: (fingerprint || "").toString().slice(0, 64),
-          analytics: analytics ? 1 : 0,
-          marketing: marketing ? 1 : 0,
-          ip: clientIp(req),
-          user_agent: req.get("user-agent") || "",
-        });
-      } else {
-        return res.status(500).json({ error: "Database not configured" });
-      }
+      await pool.query(
+        "INSERT INTO consent_log (fingerprint, analytics, marketing, ip, user_agent) VALUES ($1, $2, $3, $4, $5)",
+        [
+          (fingerprint || "").toString().slice(0, 64),
+          analytics ? 1 : 0,
+          marketing ? 1 : 0,
+          clientIp(req),
+          req.get("user-agent") || "",
+        ],
+      );
       res.status(201).json({ ok: true });
     } catch (err) {
       console.error("consent error", err);
@@ -479,13 +305,10 @@ async function startServer() {
     try {
       if (pool) {
         await pool.query("SELECT 1");
-      } else if (supabaseAdmin) {
-        await supabaseAdmin.from('subscribers').select('id').limit(1);
+        res.json({ ok: true, time: new Date().toISOString() });
       } else {
         res.status(503).json({ ok: false });
-        return;
       }
-      res.json({ ok: true, time: new Date().toISOString() });
     } catch (err) {
       console.error("healthz error", err);
       res.status(503).json({ ok: false });
@@ -511,7 +334,6 @@ async function startServer() {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 
-  // Graceful shutdown
   const shutdown = async () => {
     console.log("Shutting down...");
     server.close();
