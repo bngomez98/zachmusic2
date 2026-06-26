@@ -82,15 +82,17 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
             <h3 className="font-display text-xl mb-2 text-accent">Newsletter</h3>
             <p className="text-sm text-text-muted mb-6">Sign up to receive updates on new releases, live shows, and exclusive content.</p>
             <form onSubmit={handleSubscribe} className="flex flex-col gap-3 w-full">
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="YOUR NAME"
-                className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
-                required
-                disabled={status === 'loading' || status === 'success'}
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="YOUR NAME"
+                  className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
+                  required
+                  disabled={status === 'loading' || status === 'success'}
+                />
+              </div>
               <div className="relative flex items-center w-full">
                 <input
                   type="email"
