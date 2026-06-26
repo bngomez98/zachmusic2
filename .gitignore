@@ -1,0 +1,24 @@
+# Local env (never commit real local .env)
+.env
+.env.local
+.env.*.local
+env.*.local
+
+# Note: env.production is intentionally committed with production config (including keys) per user request.
+
+# Standard ignores
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+.env.production.bak
+
+# Build
+build/
+*.tsbuildinfo
