@@ -1,29 +1,24 @@
 // Vercel Serverless Function: /api/booking
-// Handles booking requests: validate, insert to Supabase, send confirmation via Resend if configured.
+// Validate → insert to Neon (pg) → send confirmation via Resend.
 
-import { PostgrestClient } from '@supabase/postgrest-js';
+import { Pool } from 'pg';
 import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-const REST_URL = 'https://ep-steep-salad-aqq9cg1j.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlobmVibmdkc25oeW5pYXNreGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODk5NDQsImV4cCI6MjA4OTI2NTk0NH0.QILQsJmJ7j6B2xvMws1lKQq-hS7qVhUGmM10xbxdjfE';
-const RESEND_KEY = 're_hNHYtfBA_NmkeUhuCiEvBRZURygziLzZp';
-const JWKS_URL = 'https://ep-steep-salad-aqq9cg1j.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth/.well-known/jwks.json';
-const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
-
-async function verifyToken(token?: string) {
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, JWKS);
-    return payload;
-  } catch (e) {
-    console.error('JWT verify failed', e);
-    return null;
-  }
-}
+const DATABASE_URL = process.env.DATABASE_URL;
+const RESEND_KEY = process.env.RESEND_API_KEY;
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+// Module-level pool: reused across warm invocations
+let pool: Pool | null = null;
+function getPool(): Pool {
+  if (!pool) {
+    if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
+    pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
+  }
+  return pool;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -46,72 +41,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Message too long' });
   }
 
-  if (!REST_URL || !SERVICE_KEY) {
-    return res.status(500).json({ error: 'Server not configured' });
+  if (!DATABASE_URL) {
+    return res.status(500).json({ error: 'Server not configured — DATABASE_URL missing' });
   }
-
-  const postgrest = new PostgrestClient(REST_URL, {
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-    },
-  });
 
   const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
-  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').toString().split(',')[0].trim();
-
-  // JWT verification (optional, for future auth; doesn't fail the request if no token or invalid)
-  try {
-    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-    const token = authHeader ? (typeof authHeader === 'string' ? authHeader.replace('Bearer ', '') : undefined) : undefined;
-    const verified = await verifyToken(token);
-    if (verified) {
-      console.log('Verified booking request from:', verified.sub || verified.email);
-    }
-  } catch (verifyErr) {
-    console.error('JWT verification error (non-fatal):', verifyErr);
-    // Continue without auth
-  }
-
-  const payload = {
-    name: b.name.trim(),
-    email,
-    phone: b.phone ? String(b.phone).trim() : null,
-    event_type: b.eventType ? String(b.eventType).trim() : null,
-    event_date: b.eventDate ? String(b.eventDate).trim() : null,
-    venue: b.venue ? String(b.venue).trim() : null,
-    location: b.location ? String(b.location).trim() : null,
-    hours: b.hours ? String(b.hours).trim() : null,
-    budget: b.budget ? String(b.budget).trim() : null,
-    message: b.message.trim(),
-    ip,
-    user_agent: userAgent,
-    status: 'new',
-  };
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '')
+    .toString()
+    .split(',')[0]
+    .trim();
 
   try {
-    const { error } = await postgrest.from('bookings').insert(payload);
-    if (error) {
-      console.error('booking insert error', error);
-      return res.status(500).json({ error: 'Failed to submit inquiry' });
-    }
+    await getPool().query(
+      `INSERT INTO bookings
+        (name, email, phone, event_type, event_date, venue, location, hours, budget, message, ip, user_agent, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'new')`,
+      [
+        b.name.trim(),
+        email,
+        b.phone ? String(b.phone).trim() : null,
+        b.eventType ? String(b.eventType).trim() : null,
+        b.eventDate ? String(b.eventDate).trim() : null,
+        b.venue ? String(b.venue).trim() : null,
+        b.location ? String(b.location).trim() : null,
+        b.hours ? String(b.hours).trim() : null,
+        b.budget ? String(b.budget).trim() : null,
+        b.message.trim(),
+        ip,
+        userAgent,
+      ],
+    );
 
-    // Confirmation email (best effort)
+    // Confirmation email — best effort
     if (RESEND_KEY) {
-      const display = payload.name;
       const resend = new Resend(RESEND_KEY);
-
-      resend.emails.send({
-        from: 'Zachary Walker <no-reply@zacharywalkermusic.com>',
-        to: email,
-        subject: 'Booking Inquiry Received',
-        html: `<p>Hi ${display},</p>
+      resend.emails
+        .send({
+          from: 'Zachary Walker <no-reply@zacharywalkermusic.com>',
+          to: email,
+          subject: 'Booking Inquiry Received',
+          html: `<p>Hi ${b.name.trim()},</p>
 <p>Thanks for your booking inquiry. I'll personally review the details and reply within 48 hours.</p>
-<p>Event: ${payload.event_date || ''} — ${payload.event_type || ''}</p>
+<p>Event: ${b.eventDate || ''} — ${b.eventType || ''}</p>
 <p>— Zachary Walker</p>`,
-      }).then(({ data, error }) => {
-        if (error) console.error('Resend booking error:', error);
-      }).catch((e) => console.error('resend booking email error', e));
+        })
+        .then(({ error }) => {
+          if (error) console.error('Resend booking error:', error);
+        })
+        .catch((e) => console.error('resend booking email error', e));
     }
 
     return res.status(201).json({ message: 'Booking inquiry received' });
