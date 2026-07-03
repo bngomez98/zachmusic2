@@ -1,29 +1,8 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-
-export const isSupabaseConfigured = (): boolean =>
-  Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-
-let client: SupabaseClient | null = null;
-
-export function supabase(): SupabaseClient {
-  if (!client) {
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      throw new Error('Submission failed. Please try again.');
-    }
-    client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: { headers: { 'x-zw-source': 'web' } },
-    });
-  }
-  return client;
-}
-
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 export const isEmail = (v: unknown): v is string =>
   typeof v === 'string' && EMAIL_RE.test(v.trim());
+
+export const isSupabaseConfigured = (): boolean => true;
 
 export interface SubscribeArgs {
   name?: string;
@@ -56,20 +35,25 @@ export interface ConsentArgs {
   fingerprint?: string;
 }
 
+async function apiPost(path: string, body: Record<string, unknown>) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Submission failed. Please try again.');
+  return data;
+}
+
 export async function subscribeNewsletter({ name, email, source = 'web' }: SubscribeArgs) {
   if (!isEmail(email)) throw new Error('Please enter a valid email address.');
-  const { error } = await supabase().from('subscribers').insert({
+  const data = await apiPost('/api/subscribe', {
     name: name?.trim() || null,
     email: email.trim().toLowerCase(),
     source,
   });
-  if (error) {
-    if (error.code === '23505' || (error.message || '').toLowerCase().includes('duplicate')) {
-      return { ok: true, alreadySubscribed: true };
-    }
-    throw new Error('Submission failed. Please try again.');
-  }
-  return { ok: true, alreadySubscribed: false };
+  return { ok: true, alreadySubscribed: data.message === 'Already subscribed' };
 }
 
 export async function submitBooking(args: BookingArgs) {
@@ -78,41 +62,38 @@ export async function submitBooking(args: BookingArgs) {
   if (!args.eventDate) throw new Error('Please choose an event date.');
   if (!args.message?.trim()) throw new Error('Please include a brief message.');
 
-  const { error } = await supabase().from('bookings').insert({
+  await apiPost('/api/booking', {
     name: args.name.trim(),
     email: args.email.trim().toLowerCase(),
     phone: args.phone?.trim() || null,
-    event_type: args.eventType?.trim() || null,
-    event_date: args.eventDate?.trim() || null,
+    eventType: args.eventType?.trim() || null,
+    eventDate: args.eventDate?.trim() || null,
     venue: args.venue?.trim() || null,
     location: args.location?.trim() || null,
     hours: args.hours?.trim() || null,
     budget: args.budget?.trim() || null,
     message: args.message.trim(),
   });
-  if (error) throw new Error('Submission failed. Please try again.');
   return { ok: true };
 }
 
 export async function submitContact(args: ContactArgs) {
   if (!isEmail(args.email)) throw new Error('Please enter a valid email.');
   if (!args.message?.trim()) throw new Error('Please include a message.');
-  const { error } = await supabase().from('contact_messages').insert({
+  await apiPost('/api/contact', {
     name: args.name?.trim() || null,
     email: args.email.trim().toLowerCase(),
     message: args.message.trim(),
   });
-  if (error) throw new Error('Submission failed. Please try again.');
   return { ok: true };
 }
 
 export async function logConsent(args: ConsentArgs) {
   try {
-    await supabase().from('consent_log').insert({
+    await apiPost('/api/consent', {
       fingerprint: args.fingerprint?.slice(0, 64) || null,
       analytics: args.analytics,
       marketing: args.marketing,
-      user_agent: (typeof navigator !== 'undefined' ? navigator.userAgent : null)?.slice(0, 500) || null,
     });
   } catch {
     // Non-critical — consent is also stored in localStorage.
