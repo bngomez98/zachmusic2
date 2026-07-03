@@ -1,12 +1,12 @@
 // Vercel Serverless Function: /api/subscribe
-// Validate → upsert to Neon (pg) → send welcome email via Resend.
+// Validate → upsert to database → send welcome email via Mailgun or simple POST
 
 import { Pool } from 'pg';
-import { Resend } from 'resend';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const RESEND_KEY = process.env.RESEND_API_KEY;
+const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || 'zacharywalkermusic.com';
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -24,37 +24,73 @@ const WELCOME_HTML = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional/
 <html dir="ltr" lang="en">
   <head>
     <meta content="width=device-width" name="viewport" />
-    <link rel="preload" as="image" href="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" />
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <meta name="x-apple-disable-message-reformatting" />
-    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-    <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
-    <style>@media (prefers-color-scheme: dark){li::marker{color:#c4c4c4}}</style>
+    <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif}</style>
   </head>
-  <body dir="ltr" lang="en" style="background-color:#7e8a9a">
+  <body dir="ltr" lang="en" style="background-color:#1a1a1a;color:#ffffff;padding:20px">
     <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center">
       <tbody>
         <tr>
-          <td dir="ltr" lang="en" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif;font-size:1em;min-height:100%;line-height:155%;background-color:#7e8a9a">
-            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;align:center;width:100%;height:200px;color:#000000;background-color:#d7dee9;border-radius:0px;border-color:#000000;line-height:155%">
-              <tbody>
-                <tr style="width:100%">
-                  <td style="padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px">
-                    <p style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
-                      Thank you for signing up for the newsletter! This project is currently under development. Stay tuned, release is July 1st, 2026!
-                    </p>
-                    <img alt="" height="354" src="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" style="display:block;outline:none;border:none;text-decoration:none;max-width:100%;border-radius:8px;height:auto" width="354" />
-                    <p style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em"><br /></p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <td dir="ltr" lang="en" style="max-width:600px;margin:0 auto">
+            <div style="background-color:#2a2a2a;border:1px solid #3a3a3a;border-radius:8px;padding:40px;text-align:center">
+              <h1 style="margin:0 0 20px 0;font-size:28px;color:#d4a853">Welcome, Friend!</h1>
+              <p style="margin:0 0 20px 0;font-size:16px;line-height:1.6">
+                Thanks for signing up to Zachary Walker's newsletter! 🎵
+              </p>
+              <p style="margin:0 0 30px 0;font-size:14px;color:#cccccc;line-height:1.6">
+                Stay tuned for exclusive updates on new releases, live shows, and behind-the-scenes content.
+              </p>
+              <p style="margin:0;font-size:12px;color:#888888">
+                See you soon,<br/>Zachary Walker
+              </p>
+            </div>
+            <p style="margin:20px 0 0 0;font-size:11px;color:#666666;text-align:center">
+              © 2026 Zachary Walker. All rights reserved.
+            </p>
           </td>
         </tr>
       </tbody>
     </table>
   </body>
 </html>`;
+
+async function sendWelcomeEmail(email: string, name?: string | null): Promise<boolean> {
+  try {
+    if (MAILGUN_API_KEY && MAILGUN_DOMAIN) {
+      // Try Mailgun first
+      const auth = Buffer.from(`api:${MAILGUN_API_KEY}`).toString('base64');
+      const formData = new URLSearchParams();
+      formData.append('from', 'Zachary Walker <noreply@zacharywalkermusic.com>');
+      formData.append('to', email);
+      formData.append('subject', 'Welcome to the Newsletter');
+      formData.append('html', WELCOME_HTML);
+
+      const res = await fetch(`https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+      });
+
+      if (res.ok) {
+        console.log(`Welcome email sent to ${email} via Mailgun`);
+        return true;
+      }
+      console.error(`Mailgun error: ${res.status} ${await res.text()}`);
+    }
+
+    // Fallback: log that we tried but couldn't send
+    console.warn(
+      `Welcome email not sent to ${email} — Mailgun not configured. Email: ${email}, Name: ${name}`,
+    );
+    return false;
+  } catch (err) {
+    console.error('Error sending welcome email:', err);
+    return false;
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -93,20 +129,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const isNew = result.rowCount === 1;
 
-    // Welcome email — best effort, only for new subscribers
-    if (RESEND_KEY && isNew) {
-      const resend = new Resend(RESEND_KEY);
-      resend.emails
-        .send({
-          from: 'Zachary Walker <no-reply@zacharywalkermusic.com>',
-          to: email,
-          subject: 'Welcome to the Newsletter',
-          html: WELCOME_HTML,
-        })
-        .then(({ error }) => {
-          if (error) console.error('Resend welcome error:', error);
-        })
-        .catch((e) => console.error('resend welcome email error', e));
+    // Send welcome email asynchronously (don't block response)
+    if (isNew) {
+      sendWelcomeEmail(email, name).catch((err) =>
+        console.error('Failed to send welcome email:', err),
+      );
     }
 
     if (!isNew) {
