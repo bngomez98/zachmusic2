@@ -41,9 +41,15 @@ async function apiPost(path: string, body: Record<string, unknown>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Submission failed. Please try again.');
-  return data;
+  if (!res.ok) {
+    let errMsg = 'Submission failed. Please try again.';
+    try {
+      const data = await res.json();
+      if (data?.error) errMsg = data.error;
+    } catch {}
+    throw new Error(errMsg);
+  }
+  return res.json();
 }
 
 export async function subscribeNewsletter({ name, email, source = 'web' }: SubscribeArgs) {
