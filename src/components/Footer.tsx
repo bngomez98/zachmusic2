@@ -17,7 +17,7 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
+    if (!email.trim()) return;
     setStatus('loading');
     setErrMsg('');
 
@@ -25,7 +25,7 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
       const resp = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), source: 'footer' }),
+        body: JSON.stringify({ name: name.trim() || undefined, email: email.trim(), source: 'footer' }),
       });
       const data = await resp.json().catch(() => ({}));
       if (resp.ok || resp.status === 200 || resp.status === 201) {
@@ -82,22 +82,23 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
             <h3 className="font-display text-xl mb-2 text-accent">Newsletter</h3>
             <p className="text-sm text-text-muted mb-6">Sign up to receive updates on new releases, live shows, and exclusive content.</p>
             <form onSubmit={handleSubscribe} className="flex flex-col gap-3 w-full">
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="YOUR NAME"
-                className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
-                required
-                disabled={status === 'loading' || status === 'success'}
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="YOUR NAME"
+                  className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors duration-200"
+                  disabled={status === 'loading' || status === 'success'}
+                />
+              </div>
               <div className="relative flex items-center w-full">
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="YOUR EMAIL"
-                  className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors"
+                  className="w-full bg-transparent border-b border-text-muted/30 pb-3 outline-none text-sm tracking-wide text-text-main placeholder-text-muted/50 focus:border-accent transition-colors duration-200"
                   required
                   disabled={status === 'loading' || status === 'success'}
                 />
