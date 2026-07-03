@@ -11,7 +11,7 @@ export default function NewsletterSignup({ source = 'hero' }: Props) {
   const [errMsg, setErrMsg] = useState('');
 
   useEffect(() => {
-    if (status === 'success') {
+    if (status === 'success' || status === 'error') {
       const timer = setTimeout(() => setStatus('idle'), 3000);
       return () => clearTimeout(timer);
     }
