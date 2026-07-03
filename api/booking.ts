@@ -72,22 +72,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ],
     );
 
-    // Confirmation email — best effort
+    // Emails — best effort, fire-and-forget
     if (RESEND_KEY) {
       const resend = new Resend(RESEND_KEY);
+      const name = b.name.trim();
+      const details = [
+        ['Name', name],
+        ['Email', email],
+        ['Phone', b.phone || '—'],
+        ['Event Date', b.eventDate || '—'],
+        ['Event Type', b.eventType || '—'],
+        ['Venue', b.venue || '—'],
+        ['Location', b.location || '—'],
+        ['Hours', b.hours || '—'],
+        ['Budget', b.budget || '—'],
+        ['Message', b.message.trim()],
+      ]
+        .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;font-weight:600">${k}</td><td style="padding:4px 0">${v}</td></tr>`)
+        .join('');
+
+      // 1. Notify management
+      resend.emails
+        .send({
+          from: 'Zachary Walker Bookings <no-reply@zacharywalkermusic.com>',
+          to: 'mgmt@zacharywalkermsic.com',
+          subject: `New Booking Inquiry — ${name}`,
+          replyTo: email,
+          html: `<h2>New Booking Inquiry</h2>
+<table style="border-collapse:collapse;font-family:sans-serif">${details}</table>
+<p style="margin-top:16px;color:#666;font-size:13px">Reply directly to this email to reach ${name} at ${email}.</p>`,
+        })
+        .then(({ error }) => { if (error) console.error('Resend mgmt notify error:', error); })
+        .catch((e) => console.error('resend mgmt email error', e));
+
+      // 2. Confirmation to customer
       resend.emails
         .send({
           from: 'Zachary Walker <no-reply@zacharywalkermusic.com>',
           to: email,
           subject: 'Booking Inquiry Received',
-          html: `<p>Hi ${b.name.trim()},</p>
+          html: `<p>Hi ${name},</p>
 <p>Thanks for your booking inquiry. I'll personally review the details and reply within 48 hours.</p>
 <p>Event: ${b.eventDate || ''} — ${b.eventType || ''}</p>
 <p>— Zachary Walker</p>`,
         })
-        .then(({ error }) => {
-          if (error) console.error('Resend booking error:', error);
-        })
+        .then(({ error }) => { if (error) console.error('Resend booking error:', error); })
         .catch((e) => console.error('resend booking email error', e));
     }
 
