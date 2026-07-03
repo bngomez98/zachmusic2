@@ -1,6 +1,7 @@
 import React, { useState, lazy, Suspense, useEffect } from 'react';
 import Header from '@/components/design/Header';
 import Hero from '@/components/design/Hero';
+import NewsletterSignup from '@/components/NewsletterSignup';
 import About from '@/components/design/About';
 import Player from '@/components/design/Player';
 import ShowsSection from '@/components/ShowsSection';
@@ -38,6 +39,7 @@ export default function App() {
 
       <main>
         <Hero />
+        <NewsletterSignup />
         <ReleasesSection />
         <About />
         <ShowsSection />
