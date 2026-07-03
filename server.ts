@@ -4,13 +4,10 @@ import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-// @ts-ignore
-import { Resend } from "resend";
 
 dotenv.config();
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 let pool: Pool | null = null;
 
@@ -78,41 +75,6 @@ function clientIp(req: express.Request): string {
   return (fwd.split(",")[0] || req.socket.remoteAddress || "").trim();
 }
 
-const WELCOME_HTML = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html dir="ltr" lang="en">
-  <head>
-    <meta content="width=device-width" name="viewport" />
-    <link rel="preload" as="image" href="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" />
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <meta name="x-apple-disable-message-reformatting" />
-    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-    <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection" />
-    <style>@media (prefers-color-scheme: dark){li::marker{color:#c4c4c4}}</style>
-  </head>
-  <body dir="ltr" lang="en" style="background-color:#7e8a9a">
-    <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center">
-      <tbody>
-        <tr>
-          <td dir="ltr" lang="en" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif;font-size:1em;min-height:100%;line-height:155%;background-color:#7e8a9a">
-            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;color:#000000;background-color:#d7dee9;border-radius:0px;line-height:155%">
-              <tbody>
-                <tr style="width:100%">
-                  <td style="padding:0">
-                    <p style="margin:0;padding:0;font-size:1em;padding-top:0.5em;padding-bottom:0.5em">
-                      Thank you for signing up for the newsletter! This project is currently under development. Stay tuned, release is July 1st, 2026!
-                    </p>
-                    <img alt="" height="354" src="https://cdn.resend.app/62840d2e-606c-484d-92f3-79be91d3bcb1" style="display:block;outline:none;border:none;text-decoration:none;max-width:100%;border-radius:8px;height:auto" width="354" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </body>
-</html>`;
-
 async function startServer() {
   await ensureSchema();
 
@@ -143,6 +105,7 @@ async function startServer() {
     };
 
   // ---------- Newsletter ----------
+  // Subscription endpoint - stores subscriber in DB, Supabase will send welcome email via trigger
   app.post("/api/subscribe", rateLimit("subscribe", 8, 60_000), async (req, res) => {
     const { name: rawName, email: rawEmail, source = "footer" } = req.body || {};
     if (!rawEmail || typeof rawEmail !== "string") {
@@ -167,20 +130,8 @@ async function startServer() {
       );
       const isNew = result.rowCount === 1;
 
-      if (RESEND_API_KEY && isNew) {
-        const resend = new Resend(RESEND_API_KEY);
-        resend.emails
-          .send({
-            from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
-            to: email,
-            subject: "Welcome to the Newsletter",
-            html: WELCOME_HTML,
-          })
-          .then(({ error }: any) => {
-            if (error) console.error("Resend subscribe error:", error);
-          })
-          .catch((e: any) => console.error("resend subscribe email error", e));
-      }
+      // Supabase will handle sending welcome email via database trigger
+      // (no Resend integration needed here)
 
       if (!isNew) return res.status(200).json({ message: "Already subscribed" });
       return res.status(201).json({ message: "Successfully subscribed" });
@@ -229,23 +180,8 @@ async function startServer() {
         ],
       );
 
-      if (RESEND_API_KEY) {
-        const resend = new Resend(RESEND_API_KEY);
-        resend.emails
-          .send({
-            from: "Zachary Walker <no-reply@zacharywalkermusic.com>",
-            to: email,
-            subject: "Booking Inquiry Received",
-            html: `<p>Hi ${b.name.trim()},</p>
-<p>Thanks for your booking inquiry. I'll personally review the details and reply within 48 hours.</p>
-<p>Event: ${b.eventDate || ""} — ${b.eventType || ""}</p>
-<p>— Zachary Walker</p>`,
-          })
-          .then(({ error }: any) => {
-            if (error) console.error("Resend booking error:", error);
-          })
-          .catch((e: any) => console.error("resend booking email error", e));
-      }
+      // Supabase can handle sending confirmation email via trigger if needed
+      // No Resend integration here
 
       res.status(201).json({ message: "Booking inquiry received" });
     } catch (err) {
