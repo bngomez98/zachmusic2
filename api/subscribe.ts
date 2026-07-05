@@ -87,18 +87,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ message: 'Already subscribed' });
     }
 
-    // Welcome email — best effort, fire-and-forget
+    // Welcome email — best effort, awaited so Vercel doesn't freeze before it sends
     if (RESEND_KEY) {
       const resend = new Resend(RESEND_KEY);
-      resend.emails
-        .send({
+      try {
+        const { error } = await resend.emails.send({
           from: 'Zachary Walker <no-reply@zacharywalkermusic.com>',
           to: email,
           subject: 'Welcome to the Newsletter!',
           html: WELCOME_HTML,
-        })
-        .then(({ error }) => { if (error) console.error('Resend welcome error:', error); })
-        .catch((e) => console.error('resend welcome email error', e));
+        });
+        if (error) console.error('Resend welcome error:', error);
+      } catch (e) {
+        console.error('resend welcome email error', e);
+      }
     }
 
     return res.status(201).json({ message: 'Successfully subscribed' });
