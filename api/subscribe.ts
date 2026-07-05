@@ -48,14 +48,18 @@ function ensureSchema(): Promise<void> {
   return schemaReady;
 }
 
+let transporter: nodemailer.Transporter | null = null;
 function getTransporter() {
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return null;
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT) || 587,
-    secure: Number(SMTP_PORT) === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-  });
+  if (!transporter) {
+    if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return null;
+    transporter = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: Number(SMTP_PORT) || 587,
+      secure: Number(SMTP_PORT) === 465,
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    });
+  }
+  return transporter;
 }
 
 const WELCOME_HTML = `<!DOCTYPE html>
@@ -158,17 +162,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ message: 'Already subscribed' });
     }
 
-    // Welcome email — fire-and-forget
-    const transporter = getTransporter();
-    if (transporter) {
-      transporter
-        .sendMail({
+    // Welcome email — await to prevent serverless freeze before send completes
+    const smtpTransporter = getTransporter();
+    if (smtpTransporter) {
+      try {
+        await smtpTransporter.sendMail({
           from: SMTP_FROM,
           to: email,
           subject: 'Welcome to Zachary Walker Music!',
           html: WELCOME_HTML,
-        })
-        .catch((e) => console.error('welcome email error', e));
+        });
+      } catch (e) {
+        console.error('welcome email error', e);
+      }
     }
 
     return res.status(201).json({ message: 'Successfully subscribed' });
