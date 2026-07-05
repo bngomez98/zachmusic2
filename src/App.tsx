@@ -43,7 +43,7 @@ export default function App() {
       <StickyBookingCTA />
       <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} onOpenConsent={openConsent} />
       <TipJar open={tipOpen} onClose={() => setTipOpen(false)} />
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} onOpenLegal={setLegalDoc} onOpenTip={() => setTipOpen(true)} />
       <CookieConsent onOpenPolicy={() => setLegalDoc('cookies')} />
     </div>
   );
