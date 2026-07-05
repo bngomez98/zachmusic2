@@ -114,7 +114,7 @@ const WELCOME_HTML = `
 <div style="max-width:600px;margin:0 auto;background:#1a1a1a;font-family:Arial,Helvetica,sans-serif;color:#e0e0e0">
   <div style="padding:24px 24px 16px">
     <p style="margin:0 0 4px;font-size:15px;line-height:1.5">
-      Thank you for signing up for the newsletter! This project is currently under development. Stay tuned, release is July 1st, 2026!
+      Thank you for signing up for the newsletter! Stay tuned for new music, shows, and updates.
     </p>
   </div>
   <div style="text-align:center;padding:0 24px">
