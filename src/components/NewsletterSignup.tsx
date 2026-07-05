@@ -67,7 +67,10 @@ export default function NewsletterSignup({ source = 'hero' }: Props) {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (status === 'error') setStatus('idle');
+                }}
                 placeholder="Enter your email"
                 className="flex-1 bg-surface/50 border border-white/10 rounded-lg px-4 py-3 outline-none text-sm text-text-main placeholder-text-muted/50 focus:border-accent transition-colors disabled:opacity-50"
                 required

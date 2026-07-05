@@ -20,6 +20,38 @@ function getPool(): Pool {
   return pool;
 }
 
+let schemaReady: Promise<void> | null = null;
+function ensureSchema(): Promise<void> {
+  if (!schemaReady) {
+    schemaReady = getPool()
+      .query(
+        `CREATE TABLE IF NOT EXISTS bookings (
+          id BIGSERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT,
+          event_type TEXT,
+          event_date TEXT,
+          venue TEXT,
+          location TEXT,
+          hours TEXT,
+          budget TEXT,
+          message TEXT NOT NULL,
+          ip TEXT,
+          user_agent TEXT,
+          status TEXT DEFAULT 'new',
+          created_at TIMESTAMPTZ DEFAULT now()
+        )`,
+      )
+      .then(() => undefined)
+      .catch((err) => {
+        schemaReady = null;
+        throw err;
+      });
+  }
+  return schemaReady;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -52,6 +84,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .trim();
 
   try {
+    await ensureSchema();
     await getPool().query(
       `INSERT INTO bookings
         (name, email, phone, event_type, event_date, venue, location, hours, budget, message, ip, user_agent, status)
