@@ -20,6 +20,32 @@ function getPool(): Pool {
   return pool;
 }
 
+// Ensures the subscribers table exists — this function runs standalone on
+// Vercel, so it can't rely on server.ts's startup migration having run.
+let schemaReady: Promise<void> | null = null;
+function ensureSchema(): Promise<void> {
+  if (!schemaReady) {
+    schemaReady = getPool()
+      .query(
+        `CREATE TABLE IF NOT EXISTS subscribers (
+          id BIGSERIAL PRIMARY KEY,
+          name TEXT,
+          email TEXT NOT NULL UNIQUE,
+          source TEXT,
+          ip TEXT,
+          user_agent TEXT,
+          created_at TIMESTAMPTZ DEFAULT now()
+        )`,
+      )
+      .then(() => undefined)
+      .catch((err) => {
+        schemaReady = null;
+        throw err;
+      });
+  }
+  return schemaReady;
+}
+
 const WELCOME_HTML = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html dir="ltr" lang="en">
   <head>
@@ -83,6 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .trim();
 
   try {
+    await ensureSchema();
     const result = await getPool().query(
       `INSERT INTO subscribers (name, email, source, ip, user_agent)
        VALUES ($1, $2, $3, $4, $5)
