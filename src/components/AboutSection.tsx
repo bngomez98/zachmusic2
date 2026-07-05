@@ -38,15 +38,19 @@ export default function AboutSection() {
 
             <div className="space-y-6 text-text-muted text-base leading-relaxed font-light">
               <p className="text-text-main font-normal text-lg sm:text-xl leading-relaxed">
-                I'm Zach Walker, a singer-songwriter based in Topeka, Kansas. I write songs that lean on simple melodies and honest lyrics, and I arrange them so they work well in small rooms and community events.
+                I'm Zachary Walker — I grew up in Topeka, Kansas, and I've been playing guitar since I was a teenager. Music was always around the house, and I picked up the instrument the way most people do: learning songs I liked, figuring out chords from records, and eventually writing my own.
               </p>
 
               <p className="text-[15px]">
-                I play regularly at local coffeehouses, bars, and neighborhood events around northeast Kansas. My live sets mix originals with a few covers I enjoy -- I aim for warm, straightforward performances that put the song first.
+                For years, music stayed personal — something I did at home, for friends, at the occasional open mic. In 2023, I decided to take it further. I recorded and released my first original, <em>Love and Madness</em>, and started performing publicly around northeast Kansas. That year I began a recurring lounge residency at B&amp;B Theatres Topeka Wheatfield 9, where I still play regularly.
               </p>
 
               <p className="text-[15px]">
-                I'm available for performances, private and public events, and bars, or cafe gigs. If you'd like to book a show, use the booking link below and I will follow up to confirm set length, song preferences, and the gear I'll bring.
+                My sets draw from folk, rock, indie, and pop — a mix of originals and covers arranged for solo acoustic guitar and vocals. I keep things simple: one voice, one guitar, and songs that connect. Sets run 60, 90, or 180 minutes depending on the room and the occasion.
+              </p>
+
+              <p className="text-[15px]">
+                I'm available for private events, weddings, restaurant and bar residencies, corporate engagements, house concerts, and festival programming. If you'd like to book a show, use the booking link below and I'll follow up to confirm set length, song preferences, and the gear I'll bring.
               </p>
             </div>
 
