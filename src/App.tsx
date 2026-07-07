@@ -10,6 +10,7 @@ import CookieConsent from '@/components/CookieConsent';
 import LegalModal, { type LegalDoc } from '@/components/LegalModal';
 import TipJar from '@/components/TipJar';
 import SearchModal from '@/components/SearchModal';
+import Newsletter from '@/components/Newsletter';
 import StickyBookingCTA from '@/components/StickyBookingCTA';
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
 
       <main>
         <Hero />
+        <Newsletter />
         <AboutSection />
         <MusicSection />
         <ShowsSection />
