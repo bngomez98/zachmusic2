@@ -1,54 +1,15 @@
 // Vercel Serverless Function: /api/subscribe
-// Validate → upsert to database → send welcome email via Gmail SMTP
+// Validate → insert via Supabase REST API → send welcome email via Gmail SMTP
 
-import { Pool } from 'pg';
 import nodemailer from 'nodemailer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
-let pool: Pool | null = null;
-function getPool(): Pool {
-  if (!pool) {
-    if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
-    pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
-  }
-  return pool;
-}
-
-let schemaReady: Promise<void> | null = null;
-function ensureSchema(): Promise<void> {
-  if (!schemaReady) {
-    schemaReady = getPool()
-      .query(
-        `CREATE TABLE IF NOT EXISTS subscribers (
-          id BIGSERIAL PRIMARY KEY,
-          name TEXT,
-          email TEXT NOT NULL UNIQUE,
-          source TEXT,
-          ip TEXT,
-          user_agent TEXT,
-          subscribed BOOLEAN DEFAULT true,
-          created_at TIMESTAMPTZ DEFAULT now()
-        )`,
-      )
-      .then(() =>
-        getPool().query(
-          `ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS subscribed BOOLEAN DEFAULT true`,
-        ),
-      )
-      .then(() => undefined)
-      .catch((err) => {
-        schemaReady = null;
-        throw err;
-      });
-  }
-  return schemaReady;
-}
 
 function esc(s: string) {
   return s.replace(/[&<>"']/g, (m) =>
@@ -65,10 +26,7 @@ async function sendWelcomeEmail(to: string, name: string | null) {
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
-    auth: {
-      user: GMAIL_USER,
-      pass: GMAIL_APP_PASSWORD,
-    },
+    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
   });
 
   await transporter.sendMail({
@@ -103,8 +61,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const name = typeof rawName === 'string' ? rawName.trim() || null : null;
   const src = typeof source === 'string' ? source.trim() || 'newsletter-hero' : 'newsletter-hero';
 
-  if (!DATABASE_URL) {
-    return res.status(500).json({ error: 'Server not configured — DATABASE_URL missing' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({ error: 'Server not configured — SUPABASE_URL or key missing' });
   }
 
   const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
@@ -114,16 +72,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .trim();
 
   try {
-    await ensureSchema();
-    const result = await getPool().query(
-      `INSERT INTO subscribers (name, email, source, ip, user_agent)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (email) DO NOTHING
-       RETURNING id`,
-      [name, email, src, ip, userAgent],
+    const apiUrl = SUPABASE_URL.endsWith('/rest/v1')
+      ? SUPABASE_URL
+      : `${SUPABASE_URL}/rest/v1`;
+
+    const insertRes = await fetch(
+      `${apiUrl}/subscribers?on_conflict=email`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation,resolution=ignore-duplicates',
+        },
+        body: JSON.stringify({ name, email, source: src, ip, user_agent: userAgent }),
+      },
     );
 
-    const isNew = result.rowCount === 1;
+    if (!insertRes.ok) {
+      const errBody = await insertRes.text();
+      console.error('Supabase insert error:', insertRes.status, errBody);
+      return res.status(500).json({ error: 'Failed to subscribe' });
+    }
+
+    const rows = await insertRes.json();
+    const isNew = Array.isArray(rows) && rows.length > 0;
 
     if (!isNew) {
       return res.status(200).json({ message: 'Already subscribed' });
