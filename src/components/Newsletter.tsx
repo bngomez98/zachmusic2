@@ -82,6 +82,7 @@ export default function Newsletter() {
                   }}
                   placeholder="your@email.com"
                   autoComplete="email"
+                  aria-label="Email address"
                   className="w-full bg-surface/80 border border-white/5 rounded-md pl-11 pr-4 py-3.5 text-sm text-text-main placeholder-text-muted/40 focus:border-accent/60 focus:outline-none transition-colors"
                 />
               </div>

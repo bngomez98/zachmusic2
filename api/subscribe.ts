@@ -2,11 +2,12 @@
 // Validate → upsert to database → send welcome email via Gmail SMTP
 
 import { Pool } from 'pg';
+import nodemailer from 'nodemailer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const GMAIL_USER = process.env.GMAIL_USER; // mgmt@zacharywalkermusic.com
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD; // Google App Password
+const GMAIL_USER = process.env.GMAIL_USER;
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -35,6 +36,11 @@ function ensureSchema(): Promise<void> {
           created_at TIMESTAMPTZ DEFAULT now()
         )`,
       )
+      .then(() =>
+        getPool().query(
+          `ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS subscribed BOOLEAN DEFAULT true`,
+        ),
+      )
       .then(() => undefined)
       .catch((err) => {
         schemaReady = null;
@@ -54,8 +60,22 @@ async function sendWelcomeEmail(to: string, name: string | null) {
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) return;
 
   const displayName = name ? esc(name) : 'there';
-  const subject = 'Welcome to the list';
-  const html = `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#333">
+
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_APP_PASSWORD,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `Zachary Walker <${GMAIL_USER}>`,
+    to,
+    subject: 'Welcome to the list',
+    html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#333">
 <p style="font-size:16px">Hey ${displayName},</p>
 <p>Thanks for signing up. You'll be the first to hear about upcoming shows, new recordings, and anything else worth sharing.</p>
 <p>I keep things simple — no spam, no clutter. Just honest updates when there's something worth telling you about.</p>
@@ -63,95 +83,7 @@ async function sendWelcomeEmail(to: string, name: string | null) {
 <p style="margin-top:24px">— Zachary Walker</p>
 <hr style="border:none;border-top:1px solid #eee;margin:24px 0" />
 <p style="font-size:11px;color:#999">You signed up at zacharywalkermusic.com. To unsubscribe, reply to this email with "unsubscribe."</p>
-</div>`;
-
-  const boundary = '----=_Part_' + Math.random().toString(36).slice(2);
-  const rawMessage = [
-    `From: Zachary Walker <${GMAIL_USER}>`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: 7bit',
-    '',
-    html,
-    '',
-    `--${boundary}--`,
-  ].join('\r\n');
-
-  const encodedMessage = Buffer.from(rawMessage)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-
-  // Use Gmail SMTP via nodemailer-style approach with raw SMTP
-  // Since we can't import nodemailer in serverless easily, use Google's Gmail API with service account
-  // or fall back to basic SMTP via net/tls
-  // Simplest: use fetch to Google's Gmail API with OAuth or App Password via SMTP relay
-
-  // Using Google SMTP relay via raw TLS connection
-  const net = await import('net');
-  const tls = await import('tls');
-
-  return new Promise<void>((resolve, reject) => {
-    const socket = tls.connect(465, 'smtp.gmail.com', {}, () => {
-      let step = 0;
-      let buffer = '';
-
-      socket.on('data', (data) => {
-        buffer += data.toString();
-        if (!buffer.includes('\r\n')) return;
-
-        const lines = buffer.split('\r\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line) continue;
-          const code = parseInt(line.slice(0, 3), 10);
-
-          if (step === 0 && code === 220) {
-            socket.write(`EHLO zacharywalkermusic.com\r\n`);
-            step = 1;
-          } else if (step === 1 && code === 250) {
-            const creds = Buffer.from(`\0${GMAIL_USER}\0${GMAIL_APP_PASSWORD}`).toString('base64');
-            socket.write(`AUTH PLAIN ${creds}\r\n`);
-            step = 2;
-          } else if (step === 2 && code === 235) {
-            socket.write(`MAIL FROM:<${GMAIL_USER}>\r\n`);
-            step = 3;
-          } else if (step === 3 && code === 250) {
-            socket.write(`RCPT TO:<${to}>\r\n`);
-            step = 4;
-          } else if (step === 4 && code === 250) {
-            socket.write('DATA\r\n');
-            step = 5;
-          } else if (step === 5 && code === 354) {
-            socket.write(rawMessage + '\r\n.\r\n');
-            step = 6;
-          } else if (step === 6 && code === 250) {
-            socket.write('QUIT\r\n');
-            step = 7;
-            resolve();
-          } else if (step === 7) {
-            socket.end();
-          } else if (code >= 400) {
-            socket.end();
-            reject(new Error(`SMTP error at step ${step}: ${line}`));
-          }
-        }
-      });
-
-      socket.on('error', (err) => reject(err));
-      socket.on('timeout', () => {
-        socket.end();
-        reject(new Error('SMTP timeout'));
-      });
-      socket.setTimeout(10000);
-    });
+</div>`,
   });
 }
 
@@ -197,10 +129,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ message: 'Already subscribed' });
     }
 
-    // Fire-and-forget welcome email
-    sendWelcomeEmail(email, name).catch((e) =>
-      console.error('Welcome email error:', e),
-    );
+    try {
+      await sendWelcomeEmail(email, name);
+    } catch (e) {
+      console.error('Welcome email error:', e);
+    }
 
     return res.status(201).json({ message: 'Successfully subscribed' });
   } catch (err) {
