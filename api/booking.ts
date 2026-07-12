@@ -1,56 +1,13 @@
 // Vercel Serverless Function: /api/booking
-// Validate → insert to Neon (pg) → send confirmation via Resend.
+// Validate → insert via Supabase REST API → send notifications via Gmail SMTP
 
-import { Pool } from 'pg';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const DATABASE_URL = process.env.DATABASE_URL;
-const RESEND_KEY = process.env.RESEND_API_KEY;
-
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
-// Module-level pool: reused across warm invocations
-let pool: Pool | null = null;
-function getPool(): Pool {
-  if (!pool) {
-    if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
-    pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
-  }
-  return pool;
-}
-
-let schemaReady: Promise<void> | null = null;
-function ensureSchema(): Promise<void> {
-  if (!schemaReady) {
-    schemaReady = getPool()
-      .query(
-        `CREATE TABLE IF NOT EXISTS bookings (
-          id BIGSERIAL PRIMARY KEY,
-          name TEXT NOT NULL,
-          email TEXT NOT NULL,
-          phone TEXT,
-          event_type TEXT,
-          event_date TEXT,
-          venue TEXT,
-          location TEXT,
-          hours TEXT,
-          budget TEXT,
-          message TEXT NOT NULL,
-          ip TEXT,
-          user_agent TEXT,
-          status TEXT DEFAULT 'new',
-          created_at TIMESTAMPTZ DEFAULT now()
-        )`,
-      )
-      .then(() => undefined)
-      .catch((err) => {
-        schemaReady = null;
-        throw err;
-      });
-  }
-  return schemaReady;
-}
+import {
+  SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+  GMAIL_USER, GMAIL_APP_PASSWORD,
+  EMAIL_RE, esc, supabaseApiUrl, supabaseHeaders, extractMeta,
+} from './_utils';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -73,44 +30,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Message too long' });
   }
 
-  if (!DATABASE_URL) {
-    return res.status(500).json({ error: 'Server not configured — DATABASE_URL missing' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({ error: 'Server not configured — SUPABASE_URL or key missing' });
   }
 
-  const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
-  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '')
-    .toString()
-    .split(',')[0]
-    .trim();
+  const { userAgent, ip } = extractMeta(req);
 
   try {
-    await ensureSchema();
-    await getPool().query(
-      `INSERT INTO bookings
-        (name, email, phone, event_type, event_date, venue, location, hours, budget, message, ip, user_agent, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'new')`,
-      [
-        b.name.trim(),
+    const apiUrl = supabaseApiUrl();
+
+    const insertRes = await fetch(`${apiUrl}/bookings`, {
+      method: 'POST',
+      headers: { ...supabaseHeaders(), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        name: b.name.trim(),
         email,
-        b.phone ? String(b.phone).trim() : null,
-        b.eventType ? String(b.eventType).trim() : null,
-        b.eventDate ? String(b.eventDate).trim() : null,
-        b.venue ? String(b.venue).trim() : null,
-        b.location ? String(b.location).trim() : null,
-        b.hours ? String(b.hours).trim() : null,
-        b.budget ? String(b.budget).trim() : null,
-        b.message.trim(),
+        phone: b.phone ? String(b.phone).trim() : null,
+        event_type: b.eventType ? String(b.eventType).trim() : null,
+        event_date: b.eventDate ? String(b.eventDate).trim() : null,
+        venue: b.venue ? String(b.venue).trim() : null,
+        location: b.location ? String(b.location).trim() : null,
+        hours: b.hours ? String(b.hours).trim() : null,
+        budget: b.budget ? String(b.budget).trim() : null,
+        message: b.message.trim(),
         ip,
-        userAgent,
-      ],
-    );
+        user_agent: userAgent,
+        status: 'new',
+      }),
+    });
 
-    // Emails — best effort, fire-and-forget
-    if (RESEND_KEY) {
-      const esc = (s: string) =>
-        s.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m] || m));
+    if (!insertRes.ok) {
+      const errBody = await insertRes.text();
+      console.error('Supabase booking insert error:', insertRes.status, errBody);
+      return res.status(500).json({ error: 'Failed to submit inquiry' });
+    }
 
-      const resend = new Resend(RESEND_KEY);
+    if (GMAIL_USER && GMAIL_APP_PASSWORD) {
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+      });
+
       const name = esc(b.name.trim());
       const details = [
         ['Name', name],
@@ -124,38 +86,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ['Budget', b.budget ? esc(String(b.budget).trim()) : '—'],
         ['Message', esc(b.message.trim())],
       ]
-        .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;font-weight:600">${k}</td><td style="padding:4px 0">${v}</td></tr>`)
+        .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;font-weight:600;color:#D4A853">${k}</td><td style="padding:4px 0;color:#CCCCCC">${v}</td></tr>`)
         .join('');
 
-      // 1. Notify management
-      resend.emails
-        .send({
-          from: 'Zachary Walker Bookings <no-reply@zacharywalkermusic.com>',
-          to: 'mgmt@zacharywalkermusic.com',
-          subject: `New Booking Inquiry — ${name}`,
-          replyTo: email,
-          html: `<h2>New Booking Inquiry</h2>
-<table style="border-collapse:collapse;font-family:sans-serif">${details}</table>
-<p style="margin-top:16px;color:#666;font-size:13px">Reply directly to this email to reach ${name} at ${esc(email)}.</p>`,
-        })
-        .then(({ error }) => { if (error) console.error('Resend mgmt notify error:', error); })
-        .catch((e) => console.error('resend mgmt email error', e));
-
-      // 2. Confirmation to customer
       const eventDate = b.eventDate ? esc(String(b.eventDate).trim()) : '';
       const eventType = b.eventType ? esc(String(b.eventType).trim()) : '';
-      resend.emails
-        .send({
-          from: 'Zachary Walker <no-reply@zacharywalkermusic.com>',
+
+      try {
+        await transporter.sendMail({
+          from: `Zachary Walker Bookings <${GMAIL_USER}>`,
+          to: GMAIL_USER,
+          replyTo: email,
+          subject: `New Booking Inquiry — ${b.name.trim()}`,
+          html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#111;border-radius:8px;padding:32px;border:1px solid rgba(255,255,255,0.06)">
+<h2 style="margin:0 0 20px;color:#FFFFFF;font-size:20px">New Booking Inquiry</h2>
+<table style="border-collapse:collapse;font-family:sans-serif;width:100%">${details}</table>
+<p style="margin-top:16px;color:#666;font-size:13px">Reply directly to this email to reach ${name} at ${esc(email)}.</p>
+</div>`,
+        });
+      } catch (e) {
+        console.error('Booking mgmt email error:', e);
+      }
+
+      try {
+        await transporter.sendMail({
+          from: `Zachary Walker <${GMAIL_USER}>`,
           to: email,
           subject: 'Booking Inquiry Received',
-          html: `<p>Hi ${name},</p>
-<p>Thanks for your booking inquiry. I'll personally review the details and reply within 48 hours.</p>
-<p>Event: ${eventDate} — ${eventType}</p>
-<p>— Zachary Walker</p>`,
-        })
-        .then(({ error }) => { if (error) console.error('Resend booking error:', error); })
-        .catch((e) => console.error('resend booking email error', e));
+          html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#111;border-radius:8px;padding:32px;border:1px solid rgba(255,255,255,0.06)">
+<p style="color:#FFFFFF;font-size:16px;margin:0 0 16px">Hi ${name},</p>
+<p style="color:#CCCCCC;font-size:15px;line-height:1.7;margin:0 0 16px">Thanks for your booking inquiry. I'll personally review the details and reply within 48 hours.</p>
+<p style="color:#CCCCCC;font-size:15px;line-height:1.7;margin:0 0 16px">Event: ${eventDate}${eventType ? ` — ${eventType}` : ''}</p>
+<p style="color:#CCCCCC;font-size:15px;margin:24px 0 0">— Zachary Walker</p>
+</div>`,
+        });
+      } catch (e) {
+        console.error('Booking confirmation email error:', e);
+      }
     }
 
     return res.status(201).json({ message: 'Booking inquiry received' });

@@ -3,19 +3,11 @@
 
 import nodemailer from 'nodemailer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
-
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
-function esc(s: string) {
-  return s.replace(/[&<>"']/g, (m) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m] || m),
-  );
-}
+import {
+  SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+  GMAIL_USER, GMAIL_APP_PASSWORD,
+  EMAIL_RE, esc, supabaseApiUrl, supabaseHeaders, extractMeta, buildWelcomeHtml,
+} from './_utils';
 
 async function sendWelcomeEmail(to: string, name: string | null) {
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) return;
@@ -32,16 +24,8 @@ async function sendWelcomeEmail(to: string, name: string | null) {
   await transporter.sendMail({
     from: `Zachary Walker <${GMAIL_USER}>`,
     to,
-    subject: 'Welcome to the list',
-    html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#333">
-<p style="font-size:16px">Hey ${displayName},</p>
-<p>Thanks for signing up. You'll be the first to hear about upcoming shows, new recordings, and anything else worth sharing.</p>
-<p>I keep things simple — no spam, no clutter. Just honest updates when there's something worth telling you about.</p>
-<p>In the meantime, you can find me on <a href="https://instagram.com/zacharywalkermusic" style="color:#D4A853">Instagram</a> or check out upcoming shows at <a href="https://zacharywalkermusic.com/#shows" style="color:#D4A853">zacharywalkermusic.com</a>.</p>
-<p style="margin-top:24px">— Zachary Walker</p>
-<hr style="border:none;border-top:1px solid #eee;margin:24px 0" />
-<p style="font-size:11px;color:#999">You signed up at zacharywalkermusic.com. To unsubscribe, reply to this email with "unsubscribe."</p>
-</div>`,
+    subject: 'Welcome to the list ✦',
+    html: buildWelcomeHtml(displayName),
   });
 }
 
@@ -65,25 +49,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Server not configured — SUPABASE_URL or key missing' });
   }
 
-  const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
-  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '')
-    .toString()
-    .split(',')[0]
-    .trim();
+  const { userAgent, ip } = extractMeta(req);
 
   try {
-    const apiUrl = SUPABASE_URL.endsWith('/rest/v1')
-      ? SUPABASE_URL
-      : `${SUPABASE_URL}/rest/v1`;
+    const apiUrl = supabaseApiUrl();
 
     const insertRes = await fetch(
       `${apiUrl}/subscribers?on_conflict=email`,
       {
         method: 'POST',
         headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json',
+          ...supabaseHeaders(),
           'Prefer': 'return=representation,resolution=ignore-duplicates',
         },
         body: JSON.stringify({ name, email, source: src, ip, user_agent: userAgent }),

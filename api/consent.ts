@@ -1,40 +1,11 @@
-import { Pool } from 'pg';
+// Vercel Serverless Function: /api/consent
+// Record cookie consent choices via Supabase REST API
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const DATABASE_URL = process.env.DATABASE_URL;
-
-let pool: Pool | null = null;
-function getPool(): Pool {
-  if (!pool) {
-    if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
-    pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
-  }
-  return pool;
-}
-
-let schemaReady: Promise<void> | null = null;
-function ensureSchema(): Promise<void> {
-  if (!schemaReady) {
-    schemaReady = getPool()
-      .query(
-        `CREATE TABLE IF NOT EXISTS consent_log (
-          id BIGSERIAL PRIMARY KEY,
-          fingerprint TEXT,
-          analytics INTEGER NOT NULL,
-          marketing INTEGER NOT NULL,
-          ip TEXT,
-          user_agent TEXT,
-          created_at TIMESTAMPTZ DEFAULT now()
-        )`,
-      )
-      .then(() => undefined)
-      .catch((err) => {
-        schemaReady = null;
-        throw err;
-      });
-  }
-  return schemaReady;
-}
+import {
+  SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+  supabaseApiUrl, supabaseHeaders, extractMeta,
+} from './_utils';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -43,29 +14,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { fingerprint, analytics, marketing } = req.body || {};
 
-  if (!DATABASE_URL) {
-    return res.status(500).json({ error: 'Server not configured — DATABASE_URL missing' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({ error: 'Server not configured — SUPABASE_URL or key missing' });
   }
 
-  const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
-  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '')
-    .toString()
-    .split(',')[0]
-    .trim();
+  const { userAgent, ip } = extractMeta(req);
 
   try {
-    await ensureSchema();
-    await getPool().query(
-      `INSERT INTO consent_log (fingerprint, analytics, marketing, ip, user_agent)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [
-        (fingerprint || '').toString().slice(0, 64),
-        analytics ? 1 : 0,
-        marketing ? 1 : 0,
+    const apiUrl = supabaseApiUrl();
+
+    const insertRes = await fetch(`${apiUrl}/consent_log`, {
+      method: 'POST',
+      headers: { ...supabaseHeaders(), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        fingerprint: (fingerprint || '').toString().slice(0, 64),
+        analytics: analytics ? 1 : 0,
+        marketing: marketing ? 1 : 0,
         ip,
-        userAgent,
-      ],
-    );
+        user_agent: userAgent,
+      }),
+    });
+
+    if (!insertRes.ok) {
+      const errBody = await insertRes.text();
+      console.error('Supabase consent insert error:', insertRes.status, errBody);
+      return res.status(500).json({ error: 'Failed to record consent' });
+    }
+
     return res.status(201).json({ ok: true });
   } catch (err) {
     console.error('consent handler error', err);

@@ -1,42 +1,11 @@
-import { Pool } from 'pg';
+// Vercel Serverless Function: /api/contact
+// Validate → insert via Supabase REST API
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-const DATABASE_URL = process.env.DATABASE_URL;
-
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
-let pool: Pool | null = null;
-function getPool(): Pool {
-  if (!pool) {
-    if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
-    pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
-  }
-  return pool;
-}
-
-let schemaReady: Promise<void> | null = null;
-function ensureSchema(): Promise<void> {
-  if (!schemaReady) {
-    schemaReady = getPool()
-      .query(
-        `CREATE TABLE IF NOT EXISTS contact_messages (
-          id BIGSERIAL PRIMARY KEY,
-          name TEXT,
-          email TEXT NOT NULL,
-          message TEXT NOT NULL,
-          ip TEXT,
-          user_agent TEXT,
-          created_at TIMESTAMPTZ DEFAULT now()
-        )`,
-      )
-      .then(() => undefined)
-      .catch((err) => {
-        schemaReady = null;
-        throw err;
-      });
-  }
-  return schemaReady;
-}
+import {
+  SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+  EMAIL_RE, supabaseApiUrl, supabaseHeaders, extractMeta,
+} from './_utils';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -63,23 +32,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const name = typeof rawName === 'string' ? rawName.trim() || null : null;
 
-  if (!DATABASE_URL) {
-    return res.status(500).json({ error: 'Server not configured — DATABASE_URL missing' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({ error: 'Server not configured — SUPABASE_URL or key missing' });
   }
 
-  const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
-  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '')
-    .toString()
-    .split(',')[0]
-    .trim();
+  const { userAgent, ip } = extractMeta(req);
 
   try {
-    await ensureSchema();
-    await getPool().query(
-      `INSERT INTO contact_messages (name, email, message, ip, user_agent)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [name, email, message, ip, userAgent],
-    );
+    const apiUrl = supabaseApiUrl();
+
+    const insertRes = await fetch(`${apiUrl}/contact_messages`, {
+      method: 'POST',
+      headers: { ...supabaseHeaders(), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ name, email, message, ip, user_agent: userAgent }),
+    });
+
+    if (!insertRes.ok) {
+      const errBody = await insertRes.text();
+      console.error('Supabase contact insert error:', insertRes.status, errBody);
+      return res.status(500).json({ error: 'Failed to send message' });
+    }
+
     return res.status(201).json({ message: 'Message received' });
   } catch (err) {
     console.error('contact handler error', err);
