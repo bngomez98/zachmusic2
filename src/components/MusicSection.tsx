@@ -13,7 +13,9 @@ export default function MusicSection() {
       <div className="max-w-6xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-display font-semibold tracking-tight">Music</h2>
-          <p className="text-text-muted mt-3">Original acoustic arrangements & performances</p>
+          <p className="text-text-muted mt-3 max-w-2xl mx-auto">
+            Original acoustic arrangements and performances — folk, rock, and indie songs written and recorded in Topeka, Kansas. Every track is written, performed, and produced by Zachary Walker.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -3,4 +3,4 @@
 # Publisher ID: pub-4169049103666831
 # Customer ID: 8838588512
 
-# Publisher record: google.com, pub-4169049103666831, DIRECT, 8838588512
+google.com, pub-4169049103666831, DIRECT, 8838588512

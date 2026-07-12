@@ -26,16 +26,6 @@
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://zacharywalkermusic.com/#gallery</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://zacharywalkermusic.com/#links</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://zacharywalkermusic.com/#contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

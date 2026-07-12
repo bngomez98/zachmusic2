@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Music, Calendar, Image as ImageIcon, Mail, BookOpen } from 'lucide-react';
+import { Search, X, Music, Calendar, Mail, BookOpen } from 'lucide-react';
 import { SHOWS, RELEASES } from '../data';
 
 interface SearchItem {
@@ -30,8 +30,7 @@ export default function SearchModal({ open, onClose, onOpenLegal, onOpenTip }: P
       { id: 'about', title: 'About the Artist', subtitle: 'Bio & background', anchor: '#about', type: 'page', icon: <BookOpen size={16} /> },
       { id: 'music', title: 'Music & Discography', subtitle: 'Originals and releases', anchor: '#music', type: 'page', icon: <Music size={16} /> },
       { id: 'shows', title: 'Upcoming Shows', subtitle: 'Live performances', anchor: '#shows', type: 'page', icon: <Calendar size={16} /> },
-      { id: 'gallery', title: 'Gallery', subtitle: 'Photos & reels', anchor: '#gallery', type: 'page', icon: <ImageIcon size={16} /> },
-      { id: 'booking', title: 'Book a Show', subtitle: 'Hire for your event', anchor: '#booking', type: 'page', icon: <Calendar size={16} /> },
+{ id: 'booking', title: 'Book a Show', subtitle: 'Hire for your event', anchor: '#booking', type: 'page', icon: <Calendar size={16} /> },
       { id: 'contact', title: 'Contact & Newsletter', subtitle: 'Get in touch', anchor: '#contact', type: 'page', icon: <Mail size={16} /> },
     ];
     SHOWS.forEach((s) => items.push({
