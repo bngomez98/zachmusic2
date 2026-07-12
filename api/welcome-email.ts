@@ -1,5 +1,6 @@
-// Vercel Serverless Function: /api/subscribe
-// Validate → insert via Supabase REST API → send welcome email via Gmail SMTP
+// Vercel Serverless Function: /api/welcome-email
+// Standalone endpoint to send (or re-send) the welcome email via Gmail SMTP.
+// Accepts POST { email, name? }
 
 import nodemailer from 'nodemailer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -67,32 +68,16 @@ function buildWelcomeHtml(displayName: string) {
 </html>`;
 }
 
-async function sendWelcomeEmail(to: string, name: string | null) {
-  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) return;
-
-  const displayName = name ? esc(name) : 'there';
-
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
-  });
-
-  await transporter.sendMail({
-    from: `Zachary Walker <${GMAIL_USER}>`,
-    to,
-    subject: 'Welcome to the list ✦',
-    html: buildWelcomeHtml(displayName),
-  });
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name: rawName, email: rawEmail, source = 'newsletter-hero' } = req.body || {};
+  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+    return res.status(500).json({ error: 'Email not configured' });
+  }
+
+  const { email: rawEmail, name: rawName } = req.body || {};
   if (!rawEmail || typeof rawEmail !== 'string') {
     return res.status(400).json({ error: 'Valid email is required' });
   }
@@ -101,59 +86,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Valid email is required' });
   }
   const name = typeof rawName === 'string' ? rawName.trim() || null : null;
-  const src = typeof source === 'string' ? source.trim() || 'newsletter-hero' : 'newsletter-hero';
+  const displayName = name ? esc(name) : 'there';
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return res.status(500).json({ error: 'Server not configured — SUPABASE_URL or key missing' });
-  }
-
-  const userAgent = (req.headers['user-agent'] || '').toString().slice(0, 500);
-  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '')
-    .toString()
-    .split(',')[0]
-    .trim();
-
-  try {
+  if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
     const apiUrl = SUPABASE_URL.endsWith('/rest/v1')
       ? SUPABASE_URL
       : `${SUPABASE_URL}/rest/v1`;
 
-    const insertRes = await fetch(
-      `${apiUrl}/subscribers?on_conflict=email`,
+    const check = await fetch(
+      `${apiUrl}/subscribers?email=eq.${encodeURIComponent(email)}&select=email`,
       {
-        method: 'POST',
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
           'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation,resolution=ignore-duplicates',
         },
-        body: JSON.stringify({ name, email, source: src, ip, user_agent: userAgent }),
       },
     );
-
-    if (!insertRes.ok) {
-      const errBody = await insertRes.text();
-      console.error('Supabase insert error:', insertRes.status, errBody);
-      return res.status(500).json({ error: 'Failed to subscribe' });
+    if (check.ok) {
+      const rows = await check.json();
+      if (!Array.isArray(rows) || rows.length === 0) {
+        return res.status(404).json({ error: 'Email not found in subscriber list' });
+      }
     }
+  }
 
-    const rows = await insertRes.json();
-    const isNew = Array.isArray(rows) && rows.length > 0;
+  try {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+    });
 
-    if (!isNew) {
-      return res.status(200).json({ message: 'Already subscribed' });
-    }
+    await transporter.sendMail({
+      from: `Zachary Walker <${GMAIL_USER}>`,
+      to: email,
+      subject: 'Welcome to the list ✦',
+      html: buildWelcomeHtml(displayName),
+    });
 
-    try {
-      await sendWelcomeEmail(email, name);
-    } catch (e) {
-      console.error('Welcome email error:', e);
-    }
-
-    return res.status(201).json({ message: 'Successfully subscribed' });
+    return res.status(200).json({ message: 'Welcome email sent' });
   } catch (err) {
-    console.error('subscribe handler error', err);
-    return res.status(500).json({ error: 'Failed to subscribe' });
+    console.error('welcome-email error:', err);
+    return res.status(500).json({ error: 'Failed to send email' });
   }
 }
