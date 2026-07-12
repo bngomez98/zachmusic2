@@ -24,7 +24,6 @@ export default function App() {
     <div className="min-h-screen bg-base text-text-main">
       <Nav
         onOpenSearch={() => setSearchOpen(true)}
-        onOpenTip={() => setTipOpen(true)}
       />
 
       <main>
@@ -38,7 +37,6 @@ export default function App() {
 
       <Footer
         onOpenLegal={setLegalDoc}
-        onOpenTip={() => setTipOpen(true)}
         onOpenConsent={openConsent}
       />
 

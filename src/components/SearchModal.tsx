@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Music, Calendar, Image as ImageIcon, Mail, BookOpen, Coffee } from 'lucide-react';
+import { Search, X, Music, Calendar, Image as ImageIcon, Mail, BookOpen } from 'lucide-react';
 import { SHOWS, RELEASES } from '../data';
 
 interface SearchItem {
@@ -53,7 +53,6 @@ export default function SearchModal({ open, onClose, onOpenLegal, onOpenTip }: P
       icon: <Music size={16} />,
     }));
     items.push(
-      { id: 'tip', title: 'Buy Me a Coffee', subtitle: 'Support via PayPal, Cash App, Venmo', anchor: 'action:tip', type: 'action', icon: <Coffee size={16} /> },
       { id: 'privacy', title: 'Privacy Policy', subtitle: 'How your data is handled', anchor: 'action:privacy', type: 'action', icon: <BookOpen size={16} /> },
       { id: 'terms', title: 'Terms & Conditions', subtitle: 'Site terms of use', anchor: 'action:terms', type: 'action', icon: <BookOpen size={16} /> },
       { id: 'copyright', title: 'Copyright & Licensing', subtitle: 'Rights and licensing', anchor: 'action:copyright', type: 'action', icon: <BookOpen size={16} /> },

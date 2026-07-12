@@ -1,14 +1,13 @@
-import { Instagram, Facebook, Menu, X, Search, Coffee } from 'lucide-react';
+import { Instagram, Facebook, Menu, X, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LINKS } from '../data';
 
 interface Props {
   onOpenSearch: () => void;
-  onOpenTip: () => void;
 }
 
-export default function Nav({ onOpenSearch, onOpenTip }: Props) {
+export default function Nav({ onOpenSearch }: Props) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -61,12 +60,6 @@ export default function Nav({ onOpenSearch, onOpenTip }: Props) {
               <Search size={16} />
               <kbd className="text-[9px] uppercase tracking-widest border border-white/10 px-1.5 py-0.5 rounded font-mono">⌘K</kbd>
             </button>
-            <button
-              onClick={onOpenTip}
-              className="inline-flex items-center gap-1.5 bg-accent/10 border border-accent/30 text-accent text-[10px] font-semibold uppercase tracking-widest px-3 py-2 rounded-full hover:bg-accent hover:text-base transition-all"
-            >
-              <Coffee size={12} /> Tip
-            </button>
             <div className="w-px h-4 bg-text-muted/30" />
             <a href={LINKS.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="text-text-muted hover:text-accent transition-colors">
               <Instagram size={18} />
@@ -104,12 +97,6 @@ export default function Nav({ onOpenSearch, onOpenTip }: Props) {
                   {link.name}
                 </a>
               ))}
-              <button
-                onClick={() => { setIsOpen(false); onOpenTip(); }}
-                className="inline-flex items-center gap-2 bg-accent text-base px-6 py-3 rounded-full text-xs font-semibold uppercase tracking-widest mt-2"
-              >
-                <Coffee size={14} /> Buy Me a Coffee
-              </button>
               <div className="w-16 h-px bg-text-muted/30 my-2" />
               <div className="flex gap-8">
                 <a href={LINKS.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="text-text-muted hover:text-accent transition-colors">

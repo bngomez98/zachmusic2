@@ -89,36 +89,134 @@ async function sendWelcomeEmail(toEmail: string, toName: string | null) {
     return;
   }
   const displayName = toName || toEmail.split("@")[0];
-  const fromAddress = `Zach Music <${process.env.GMAIL_USER}>`;
+  const fromAddress = `Zachary Walker Music <${process.env.GMAIL_USER}>`;
+
+  // Social icon URLs (inline SVG data URIs for email clients)
+  const promoImageUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-jZ48pn8lh4r3tI4AHv1GKUrHHYVSNC.png";
+
   await mailer.sendMail({
     from: fromAddress,
     to: toEmail,
-    subject: "You're on the list",
+    subject: "Thank you for signing up for the newsletter!",
     text: [
       `Hey ${displayName},`,
       "",
-      "Thanks for subscribing — you'll be the first to hear about new shows, new music, and the occasional behind-the-scenes update.",
+      "Thank you for signing up for the newsletter! This project is currently under development. Stay tuned, release is July 1st, 2026!",
       "",
-      "Stay tuned.",
-      "— Zach",
+      "More to come, stay tuned!",
       "",
-      "────────────────────────────────────",
-      "To unsubscribe, reply to this email with 'unsubscribe' in the subject line.",
+      "You are receiving this email because you opted in via our site.",
+      "",
+      "Follow along:",
+      "Instagram: https://www.instagram.com/za.chary5068",
+      "Facebook:  https://www.facebook.com/topcityzachary",
+      "YouTube:   https://www.youtube.com/@fullmetalzcw",
+      "TikTok:    https://www.tiktok.com/@fullmetalzcw",
+      "",
+      "Want to change how you receive these emails?",
+      "Reply to this email with 'unsubscribe' in the subject to be removed.",
+      "",
+      "Zachary Walker Music",
+      "Topeka, KS 66604",
+      "United States of America",
     ].join("\n"),
-    html: `
-      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#e2e0d9;background:#18181b;padding:32px 24px;border-radius:8px;">
-        <p style="font-size:15px;line-height:1.6;margin-top:0;">Hey ${displayName},</p>
-        <p style="font-size:15px;line-height:1.6;">
-          Thanks for subscribing — you'll be the first to hear about new shows, new music, and the occasional behind-the-scenes update.
-        </p>
-        <p style="font-size:15px;line-height:1.6;">Stay tuned.</p>
-        <p style="font-size:15px;line-height:1.6;margin-bottom:0;">— Zach</p>
-        <hr style="border:none;border-top:1px solid #333;margin:24px 0;" />
-        <p style="font-size:11px;color:#888;margin:0;">
-          To unsubscribe, reply to this email with "unsubscribe" in the subject line.
-        </p>
-      </div>
-    `,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:4px;overflow:hidden;max-width:520px;width:100%;">
+
+          <!-- Header message -->
+          <tr>
+            <td style="padding:24px 28px 16px;font-size:14px;line-height:1.6;color:#222;">
+              Thank you for signing up for the newsletter! <span style="color:#b87e1a;">This project is currently under development.</span> Stay tuned, release is July 1st, 2026!
+            </td>
+          </tr>
+
+          <!-- Promo Image -->
+          <tr>
+            <td align="center" style="padding:8px 28px 20px;">
+              <img
+                src="${promoImageUrl}"
+                alt="Zachary Walker — Acoustic Originals &amp; Covers"
+                width="420"
+                style="max-width:100%;border-radius:4px;display:block;"
+              />
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr><td style="padding:0 28px;"><hr style="border:none;border-top:1px solid #e5e5e5;margin:0;" /></td></tr>
+
+          <!-- Body copy -->
+          <tr>
+            <td style="padding:20px 28px 8px;font-size:14px;line-height:1.7;color:#444;">
+              You are receiving this email because you opted in via our site.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 20px;font-size:14px;line-height:1.7;color:#444;">
+              More to come, stay tuned!
+            </td>
+          </tr>
+
+          <!-- Social icons -->
+          <tr>
+            <td align="center" style="padding:8px 28px 24px;">
+              <table cellpadding="0" cellspacing="0"><tr>
+                <td style="padding:0 8px;">
+                  <a href="https://www.instagram.com/za.chary5068" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="20" height="20" alt="Instagram" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+                <td style="padding:0 8px;">
+                  <a href="https://www.facebook.com/topcityzachary" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174848.png" width="20" height="20" alt="Facebook" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+                <td style="padding:0 8px;">
+                  <a href="https://www.youtube.com/@fullmetalzcw" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="20" height="20" alt="YouTube" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+                <td style="padding:0 8px;">
+                  <a href="https://www.tiktok.com/@fullmetalzcw" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="20" height="20" alt="TikTok" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+              </tr></table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr><td style="padding:0 28px;"><hr style="border:none;border-top:1px solid #e5e5e5;margin:0;" /></td></tr>
+
+          <!-- Unsubscribe -->
+          <tr>
+            <td style="padding:16px 28px 8px;font-size:12px;color:#666;line-height:1.6;">
+              Want to change how you receive these emails?<br/>
+              You can <a href="mailto:${process.env.GMAIL_USER}?subject=unsubscribe" style="color:#b87e1a;text-decoration:underline;">unsubscribe from this list</a>.
+            </td>
+          </tr>
+
+          <!-- Footer address -->
+          <tr>
+            <td style="padding:8px 28px 28px;font-size:12px;color:#b87e1a;line-height:1.8;">
+              Zachary Walker Music<br/>
+              Topeka, KS 66604<br/>
+              United States of America
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
   });
 }
 
