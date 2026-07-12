@@ -6,7 +6,9 @@ import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import { createServer as createViteServer } from "vite";
 
-dotenv.config();
+// Load env vars — prefer .env.development.local (Vercel-injected) then fall back to .env
+dotenv.config({ path: ".env.development.local" });
+dotenv.config({ path: ".env", override: false });
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
