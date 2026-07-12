@@ -3,6 +3,7 @@ import path from "path";
 import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 import { createServer as createViteServer } from "vite";
 
 dotenv.config();
@@ -70,6 +71,57 @@ async function ensureSchema() {
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+// ---------- Mailer ----------
+function createMailer() {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) return null;
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass },
+  });
+}
+
+async function sendWelcomeEmail(toEmail: string, toName: string | null) {
+  const mailer = createMailer();
+  if (!mailer) {
+    console.warn("[mailer] GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping welcome email.");
+    return;
+  }
+  const displayName = toName || toEmail.split("@")[0];
+  const fromAddress = `Zach Music <${process.env.GMAIL_USER}>`;
+  await mailer.sendMail({
+    from: fromAddress,
+    to: toEmail,
+    subject: "You're on the list",
+    text: [
+      `Hey ${displayName},`,
+      "",
+      "Thanks for subscribing — you'll be the first to hear about new shows, new music, and the occasional behind-the-scenes update.",
+      "",
+      "Stay tuned.",
+      "— Zach",
+      "",
+      "────────────────────────────────────",
+      "To unsubscribe, reply to this email with 'unsubscribe' in the subject line.",
+    ].join("\n"),
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#e2e0d9;background:#18181b;padding:32px 24px;border-radius:8px;">
+        <p style="font-size:15px;line-height:1.6;margin-top:0;">Hey ${displayName},</p>
+        <p style="font-size:15px;line-height:1.6;">
+          Thanks for subscribing — you'll be the first to hear about new shows, new music, and the occasional behind-the-scenes update.
+        </p>
+        <p style="font-size:15px;line-height:1.6;">Stay tuned.</p>
+        <p style="font-size:15px;line-height:1.6;margin-bottom:0;">— Zach</p>
+        <hr style="border:none;border-top:1px solid #333;margin:24px 0;" />
+        <p style="font-size:11px;color:#888;margin:0;">
+          To unsubscribe, reply to this email with "unsubscribe" in the subject line.
+        </p>
+      </div>
+    `,
+  });
+}
+
 function clientIp(req: express.Request): string {
   const fwd = (req.headers["x-forwarded-for"] || "").toString();
   return (fwd.split(",")[0] || req.socket.remoteAddress || "").trim();
@@ -105,7 +157,6 @@ async function startServer() {
     };
 
   // ---------- Newsletter ----------
-  // Subscription endpoint - stores subscriber in DB, Supabase will send welcome email via trigger
   app.post("/api/subscribe", rateLimit("subscribe", 8, 60_000), async (req, res) => {
     const { name: rawName, email: rawEmail, source = "footer" } = req.body || {};
     if (!rawEmail || typeof rawEmail !== "string") {
@@ -130,10 +181,12 @@ async function startServer() {
       );
       const isNew = result.rowCount === 1;
 
-      // Supabase will handle sending welcome email via database trigger
-      // (no Resend integration needed here)
-
       if (!isNew) return res.status(200).json({ message: "Already subscribed" });
+
+      // Send welcome email (fire-and-forget — don't block the response)
+      sendWelcomeEmail(email, name).catch((err) =>
+        console.error("[mailer] welcome email failed:", err?.message || err),
+      );
       return res.status(201).json({ message: "Successfully subscribed" });
     } catch (err) {
       console.error("subscribe error", err);
