@@ -6,9 +6,17 @@ import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import { createServer as createViteServer } from "vite";
 
-// Load env vars — prefer .env.development.local (Vercel-injected) then fall back to .env
-dotenv.config({ path: ".env.development.local" });
-dotenv.config({ path: ".env", override: false });
+const nodeEnv = process.env.NODE_ENV;
+
+// Load env vars:
+// - In development, prefer .env.development.local (Vercel-injected) then fall back to .env
+// - In other environments, use default dotenv behavior (e.g. .env, .env.production, etc.)
+if (nodeEnv === "development") {
+  dotenv.config({ path: ".env.development.local" });
+  dotenv.config({ path: ".env", override: false });
+} else {
+  dotenv.config();
+}
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
