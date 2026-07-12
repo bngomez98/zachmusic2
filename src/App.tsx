@@ -24,21 +24,19 @@ export default function App() {
     <div className="min-h-screen bg-base text-text-main">
       <Nav
         onOpenSearch={() => setSearchOpen(true)}
-        onOpenTip={() => setTipOpen(true)}
       />
 
       <main>
         <Hero />
-        <Newsletter />
         <AboutSection />
         <MusicSection />
         <ShowsSection />
         <BookingSection />
+        <Newsletter />
       </main>
 
       <Footer
         onOpenLegal={setLegalDoc}
-        onOpenTip={() => setTipOpen(true)}
         onOpenConsent={openConsent}
       />
 

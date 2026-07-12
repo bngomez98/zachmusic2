@@ -247,7 +247,7 @@ export default function BookingSection() {
                     value={form.message}
                     onChange={(e) => update('message', e.target.value)}
                     className={`${inputCls} min-h-[120px] resize-y`}
-                    placeholder="Indoor or outdoor? Number of guests? Specific song requests? The more I know, the better the set."
+                    placeholder="Indoor or outdoor? Number of guests? The more I know, the better the set."
                     required
                   />
                 </Field>

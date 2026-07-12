@@ -1,118 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
-import { ThumbsUp, Music, Flame, Mail, Phone } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import { SHOWS } from '../data';
 
-interface SetlistSong {
-  id: string;
-  title: string;
-  artist: string;
-  category: string;
-  votes: number;
-}
-
-interface CustomRequest {
-  id: string;
-  songName: string;
-  artistName: string;
-  dedication?: string;
-  timestamp: string;
-}
-
-const INITIAL_SETLIST: SetlistSong[] = [
-  { id: '1', title: 'Something in the Orange', artist: 'Zach Bryan', category: 'Popular Request', votes: 124 },
-  { id: '2', title: 'Love and Madness', artist: 'Zachary Walker (Original)', category: 'Original', votes: 198 },
-  { id: '3', title: 'Feathered Indians', artist: 'Tyler Childers', category: 'Popular Request', votes: 97 },
-  { id: '4', title: 'Harvest Moon', artist: 'Neil Young', category: 'Classic', votes: 76 },
-  { id: '5', title: 'Cover Me Up', artist: 'Jason Isbell', category: 'Folk Cover', votes: 85 },
-];
-
 export default function ShowsSection() {
-  const [setlist, setSetlist] = useState<SetlistSong[]>([]);
-  const [votedIds, setVotedIds] = useState<string[]>([]);
-  const [customRequests, setCustomRequests] = useState<CustomRequest[]>([]);
-  const [songName, setSongName] = useState('');
-  const [artistName, setArtistName] = useState('');
-  const [dedication, setDedication] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-
-  useEffect(() => {
-    const savedSetlist = localStorage.getItem('zw_setlist');
-    const savedVotes = localStorage.getItem('zw_voted_ids');
-    const savedCustoms = localStorage.getItem('zw_custom_requests');
-
-    if (savedSetlist) {
-      setSetlist(JSON.parse(savedSetlist));
-    } else {
-      setSetlist(INITIAL_SETLIST);
-    }
-
-    if (savedVotes) {
-      setVotedIds(JSON.parse(savedVotes));
-    }
-
-    if (savedCustoms) {
-      setCustomRequests(JSON.parse(savedCustoms));
-    }
-  }, []);
-
-  const handleVote = (id: string) => {
-    if (votedIds.includes(id)) return;
-
-    const updatedSetlist = setlist.map(song => {
-      if (song.id === id) {
-        return { ...song, votes: song.votes + 1 };
-      }
-      return song;
-    });
-
-    const updatedVotes = [...votedIds, id];
-
-    setSetlist(updatedSetlist);
-    setVotedIds(updatedVotes);
-
-    localStorage.setItem('zw_setlist', JSON.stringify(updatedSetlist));
-    localStorage.setItem('zw_voted_ids', JSON.stringify(updatedVotes));
-  };
-
-  const handleCustomSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!songName.trim()) {
-      setErrorMsg('Please specify a song title.');
-      return;
-    }
-
-    const newRequest: CustomRequest = {
-      id: Math.random().toString(36).substr(2, 9),
-      songName: songName.trim(),
-      artistName: artistName.trim() || 'Traditional / Unknown',
-      dedication: dedication.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    const updatedCustoms = [newRequest, ...customRequests];
-    setCustomRequests(updatedCustoms);
-    localStorage.setItem('zw_custom_requests', JSON.stringify(updatedCustoms));
-
-    setSongName('');
-    setArtistName('');
-    setDedication('');
-    setErrorMsg('');
-    setIsSubmitted(true);
-
-    setTimeout(() => {
-      setIsSubmitted(false);
-    }, 4000);
-  };
-
-  const clearMyRequests = () => {
-    setCustomRequests([]);
-    localStorage.removeItem('zw_custom_requests');
-  };
-
-  const sortedSetlist = [...setlist].sort((a, b) => b.votes - a.votes);
-
   return (
     <section id="shows" className="bg-surface py-32 text-text-main border-y border-text-muted/10">
       <div className="max-w-4xl mx-auto px-6 lg:px-12">
@@ -185,81 +76,30 @@ export default function ShowsSection() {
         <div className="border border-text-muted/10 rounded-lg p-8 md:p-12 bg-base/40 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full filter blur-[80px] pointer-events-none" />
 
-          <div className="flex flex-col lg:flex-row gap-12 relative z-10">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-6">
-                <Flame size={18} className="text-accent animate-pulse" />
-                <h3 className="text-2xl font-display font-semibold tracking-tight">Request Board</h3>
+          <div className="relative z-10 max-w-md">
+            <h3 className="text-2xl font-display font-semibold tracking-tight mb-3">Booking &amp; Inquiries</h3>
+            <p className="text-text-muted text-sm mb-10 leading-relaxed font-light">
+              For private events, venue booking, or management inquiries, please reach out directly.
+            </p>
+
+            <div className="space-y-6">
+              <div className="flex items-center gap-4 group cursor-pointer">
+                <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-surface flex items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
+                  <Mail size={16} className="text-text-muted group-hover:text-accent transition-colors" />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Email</p>
+                  <a href="mailto:mgmt@zacharywalkermusic.com" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">mgmt@zacharywalkermusic.com</a>
+                </div>
               </div>
-              <p className="text-text-muted text-sm mb-8 leading-relaxed font-light">
-                Upvote the songs you'd like to hear at the next show.
-              </p>
 
-              <div className="space-y-4">
-                {sortedSetlist.map((song) => {
-                  const isVoted = votedIds.includes(song.id);
-                  return (
-                    <div
-                      key={song.id}
-                      className="flex items-center justify-between p-4 rounded bg-surface border border-white/[0.02] hover:border-accent/20 transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-base flex items-center justify-center text-accent/80 border border-text-muted/10">
-                          <Music size={14} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-text-main font-sans">{song.title}</p>
-                          <p className="text-[11px] text-text-muted uppercase tracking-wider">{song.artist}</p>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => handleVote(song.id)}
-                        disabled={isVoted}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs tracking-wider uppercase transition-all duration-300 font-mono ${
-                          isVoted
-                            ? 'bg-accent/10 border border-accent/30 text-accent cursor-default'
-                            : 'bg-base border border-text-muted/10 text-text-muted hover:border-accent hover:text-accent hover:bg-accent/5 active:scale-95'
-                        }`}
-                      >
-                        <ThumbsUp size={11} className={isVoted ? 'fill-accent' : ''} />
-                        <span>{song.votes}</span>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="w-full lg:w-[320px] flex flex-col justify-center">
-              <div className="bg-surface/60 border border-white/5 p-8 rounded-2xl">
-                <h4 className="text-xl font-display font-medium mb-4 flex items-center gap-2">
-                  Booking & Inquiries
-                </h4>
-                <p className="text-text-muted text-xs mb-8 leading-relaxed font-light">
-                  For private events, venue booking, or management inquiries, please reach out directly.
-                </p>
-
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4 group cursor-pointer">
-                    <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-base flex flex-col items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
-                      <Mail size={16} className="text-text-muted group-hover:text-accent transition-colors" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Email</p>
-                      <a href="mailto:mgmt@zacharywalkermusic.com" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">mgmt@zacharywalkermusic.com</a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 group cursor-pointer">
-                    <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-base flex items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
-                      <Phone size={16} className="text-text-muted group-hover:text-accent transition-colors" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Phone</p>
-                      <a href="tel:+17854988881" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">785-498-8881</a>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-4 group cursor-pointer">
+                <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-surface flex items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
+                  <Phone size={16} className="text-text-muted group-hover:text-accent transition-colors" />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Phone</p>
+                  <a href="tel:+17854988881" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">785-498-8881</a>
                 </div>
               </div>
             </div>

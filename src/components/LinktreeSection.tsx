@@ -6,7 +6,7 @@ import {
   Radio,
   Music,
   CalendarDays,
-  Coffee,
+  Heart,
   ExternalLink,
 } from 'lucide-react';
 import { LINKS } from '../data';
@@ -51,8 +51,8 @@ const quickLinks = [
 
 const supportLinks = [
   { label: 'PayPal', href: LINKS.paypal, Icon: PayPalIcon },
-  { label: 'Venmo', href: LINKS.venmo, Icon: Coffee },
-  { label: 'Cash App', href: LINKS.cashapp, Icon: Coffee },
+  { label: 'Venmo', href: LINKS.venmo, Icon: Heart },
+  { label: 'Cash App', href: LINKS.cashapp, Icon: Heart },
 ];
 
 export default function LinktreeSection() {
@@ -145,10 +145,9 @@ export default function LinktreeSection() {
           transition={{ duration: 0.8, delay: 0.15 }}
           className="border border-accent/20 rounded-2xl p-8 bg-accent/5 text-center"
         >
-          <Coffee size={28} className="text-accent mx-auto mb-3" />
-          <h3 className="font-display text-xl font-semibold tracking-tight mb-2">Buy Me a Coffee</h3>
+          <h3 className="font-display text-xl font-semibold tracking-tight mb-2">Support the Music</h3>
           <p className="text-text-muted text-sm font-light leading-relaxed mb-6 max-w-xs mx-auto">
-            If my music means something to you, consider leaving a tip. Every bit goes straight toward gear, recording time, and keeping the music alive.
+            Every bit goes straight toward gear, recording time, and keeping the music alive.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             {supportLinks.map((s) => (

@@ -317,10 +317,10 @@ function TermsContent() {
         <span className="text-text-main"> Copyright &amp; Licensing</span> notice for the full reservation of rights.
       </p>
 
-      <H>5. User Submissions (Forms, Requests, Newsletter)</H>
+      <H>5. User Submissions (Forms, Newsletter)</H>
       <p>
-        When you submit content through a form on the Site (including booking inquiries, contact messages, song
-        requests, or newsletter sign-ups), you represent that:
+        When you submit content through a form on the Site (including booking inquiries, contact messages, or
+        newsletter sign-ups), you represent that:
       </p>
       <ul className="list-disc pl-5 space-y-1.5">
         <li>The information you provide is accurate and your own;</li>
@@ -329,7 +329,7 @@ function TermsContent() {
       </ul>
       <p>
         You grant us a non-exclusive, worldwide, royalty-free license to use your submission for the limited purpose
-        of responding to it and operating the Site. Submitting a song request does not guarantee performance.
+        of responding to it and operating the Site.
       </p>
 
       <H>6. Bookings &amp; Engagements</H>
@@ -623,7 +623,7 @@ function CookiesContent({ onOpenConsent }: { onOpenConsent?: () => void }) {
         These cannot be disabled.</p>
       <ul className="list-disc pl-5 space-y-1 text-xs">
         <li><code className="text-text-main font-mono">zw_consent</code> (localStorage) — stores your consent preferences and the timestamp.</li>
-        <li><code className="text-text-main font-mono">zw_setlist</code>, <code className="text-text-main font-mono">zw_voted_ids</code>, <code className="text-text-main font-mono">zw_custom_requests</code> (localStorage) — store your song-request and voting activity locally on your device only.</li>
+
       </ul>
 
       <p><span className="text-text-main">b. Analytics (Optional).</span> Help us understand how visitors use the

@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { Instagram, Facebook, Mail, ArrowRight, Copyright, Coffee } from 'lucide-react';
+import { Instagram, Facebook, Mail, ArrowRight, Copyright } from 'lucide-react';
 import { LINKS } from '../data';
 import { LegalDoc } from './LegalModal';
 
 interface Props {
   onOpenLegal: (doc: Exclude<LegalDoc, null>) => void;
-  onOpenTip: () => void;
   onOpenConsent: () => void;
 }
 
-export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props) {
+export default function Footer({ onOpenLegal, onOpenConsent }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle');
@@ -69,12 +68,6 @@ export default function Footer({ onOpenLegal, onOpenTip, onOpenConsent }: Props)
               <a href={LINKS.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
                 <Facebook size={20} />
               </a>
-              <button
-                onClick={onOpenTip}
-                className="ml-2 inline-flex items-center gap-2 bg-accent text-base px-4 py-2.5 rounded-full text-[11px] font-semibold uppercase tracking-widest hover:bg-accent/90 transition-colors"
-              >
-                <Coffee size={14} /> Buy Me a Coffee
-              </button>
             </div>
           </div>
 

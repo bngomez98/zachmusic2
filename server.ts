@@ -3,6 +3,7 @@ import path from "path";
 import cors from "cors";
 import { Pool } from "pg";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 import { createServer as createViteServer } from "vite";
 
 dotenv.config();
@@ -70,6 +71,155 @@ async function ensureSchema() {
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+// ---------- Mailer ----------
+function createMailer() {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) return null;
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass },
+  });
+}
+
+async function sendWelcomeEmail(toEmail: string, toName: string | null) {
+  const mailer = createMailer();
+  if (!mailer) {
+    console.warn("[mailer] GMAIL_USER / GMAIL_APP_PASSWORD not set — skipping welcome email.");
+    return;
+  }
+  const displayName = toName || toEmail.split("@")[0];
+  const fromAddress = `Zachary Walker Music <${process.env.GMAIL_USER}>`;
+
+  // Social icon URLs (inline SVG data URIs for email clients)
+  const promoImageUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-jZ48pn8lh4r3tI4AHv1GKUrHHYVSNC.png";
+
+  await mailer.sendMail({
+    from: fromAddress,
+    to: toEmail,
+    subject: "Thank you for signing up for the newsletter!",
+    text: [
+      `Hey ${displayName},`,
+      "",
+      "Thank you for signing up for the newsletter! This project is currently under development. Stay tuned, release is July 1st, 2026!",
+      "",
+      "More to come, stay tuned!",
+      "",
+      "You are receiving this email because you opted in via our site.",
+      "",
+      "Follow along:",
+      "Instagram: https://www.instagram.com/za.chary5068",
+      "Facebook:  https://www.facebook.com/topcityzachary",
+      "YouTube:   https://www.youtube.com/@fullmetalzcw",
+      "TikTok:    https://www.tiktok.com/@fullmetalzcw",
+      "",
+      "Want to change how you receive these emails?",
+      "Reply to this email with 'unsubscribe' in the subject to be removed.",
+      "",
+      "Zachary Walker Music",
+      "Topeka, KS 66604",
+      "United States of America",
+    ].join("\n"),
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:4px;overflow:hidden;max-width:520px;width:100%;">
+
+          <!-- Header message -->
+          <tr>
+            <td style="padding:24px 28px 16px;font-size:14px;line-height:1.6;color:#222;">
+              Thank you for signing up for the newsletter! <span style="color:#b87e1a;">This project is currently under development.</span> Stay tuned, release is July 1st, 2026!
+            </td>
+          </tr>
+
+          <!-- Promo Image -->
+          <tr>
+            <td align="center" style="padding:8px 28px 20px;">
+              <img
+                src="${promoImageUrl}"
+                alt="Zachary Walker — Acoustic Originals &amp; Covers"
+                width="420"
+                style="max-width:100%;border-radius:4px;display:block;"
+              />
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr><td style="padding:0 28px;"><hr style="border:none;border-top:1px solid #e5e5e5;margin:0;" /></td></tr>
+
+          <!-- Body copy -->
+          <tr>
+            <td style="padding:20px 28px 8px;font-size:14px;line-height:1.7;color:#444;">
+              You are receiving this email because you opted in via our site.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 20px;font-size:14px;line-height:1.7;color:#444;">
+              More to come, stay tuned!
+            </td>
+          </tr>
+
+          <!-- Social icons -->
+          <tr>
+            <td align="center" style="padding:8px 28px 24px;">
+              <table cellpadding="0" cellspacing="0"><tr>
+                <td style="padding:0 8px;">
+                  <a href="https://www.instagram.com/za.chary5068" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="20" height="20" alt="Instagram" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+                <td style="padding:0 8px;">
+                  <a href="https://www.facebook.com/topcityzachary" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174848.png" width="20" height="20" alt="Facebook" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+                <td style="padding:0 8px;">
+                  <a href="https://www.youtube.com/@fullmetalzcw" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="20" height="20" alt="YouTube" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+                <td style="padding:0 8px;">
+                  <a href="https://www.tiktok.com/@fullmetalzcw" target="_blank" style="display:inline-block;width:40px;height:40px;background:#222;border-radius:50%;text-align:center;line-height:40px;text-decoration:none;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="20" height="20" alt="TikTok" style="vertical-align:middle;margin-top:10px;" />
+                  </a>
+                </td>
+              </tr></table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr><td style="padding:0 28px;"><hr style="border:none;border-top:1px solid #e5e5e5;margin:0;" /></td></tr>
+
+          <!-- Unsubscribe -->
+          <tr>
+            <td style="padding:16px 28px 8px;font-size:12px;color:#666;line-height:1.6;">
+              Want to change how you receive these emails?<br/>
+              You can <a href="mailto:${process.env.GMAIL_USER}?subject=unsubscribe" style="color:#b87e1a;text-decoration:underline;">unsubscribe from this list</a>.
+            </td>
+          </tr>
+
+          <!-- Footer address -->
+          <tr>
+            <td style="padding:8px 28px 28px;font-size:12px;color:#b87e1a;line-height:1.8;">
+              Zachary Walker Music<br/>
+              Topeka, KS 66604<br/>
+              United States of America
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  });
+}
+
 function clientIp(req: express.Request): string {
   const fwd = (req.headers["x-forwarded-for"] || "").toString();
   return (fwd.split(",")[0] || req.socket.remoteAddress || "").trim();
@@ -105,7 +255,6 @@ async function startServer() {
     };
 
   // ---------- Newsletter ----------
-  // Subscription endpoint - stores subscriber in DB, Supabase will send welcome email via trigger
   app.post("/api/subscribe", rateLimit("subscribe", 8, 60_000), async (req, res) => {
     const { name: rawName, email: rawEmail, source = "footer" } = req.body || {};
     if (!rawEmail || typeof rawEmail !== "string") {
@@ -130,10 +279,12 @@ async function startServer() {
       );
       const isNew = result.rowCount === 1;
 
-      // Supabase will handle sending welcome email via database trigger
-      // (no Resend integration needed here)
-
       if (!isNew) return res.status(200).json({ message: "Already subscribed" });
+
+      // Send welcome email (fire-and-forget — don't block the response)
+      sendWelcomeEmail(email, name).catch((err) =>
+        console.error("[mailer] welcome email failed:", err?.message || err),
+      );
       return res.status(201).json({ message: "Successfully subscribed" });
     } catch (err) {
       console.error("subscribe error", err);
