@@ -70,7 +70,7 @@ export default function Hero() {
           transition={{ duration: 18, ease: 'easeOut' }}
           className={`absolute inset-0 w-full h-full object-cover mix-blend-screen transition-opacity duration-[1500ms] ${videoReady ? 'opacity-60' : 'opacity-0'}`}
         >
-          <source src="/hero-new.mp4" type="video/mp4" />
+          <source src="/highlight.mp4" type="video/mp4" />
         </motion.video>
       </motion.div>
 
