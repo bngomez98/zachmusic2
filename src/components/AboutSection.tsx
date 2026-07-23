@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Instagram, Link as LinkIcon, Music, MapPin, Calendar, Mic, Quote } from 'lucide-react';
+import { Instagram, Link as LinkIcon, Music, MapPin, Calendar, Mic } from 'lucide-react';
 import { LINKS } from '../data';
 import aboutImage from '../assets/images/regenerated_image_1781019033978.jpg';
 
@@ -21,7 +21,7 @@ export default function AboutSection() {
               className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.2em] uppercase text-accent mb-6 leading-relaxed"
             >
               <span className="w-8 h-[1px] bg-accent/60" />
-              The Artist
+              About
             </motion.span>
 
             <motion.h2
@@ -31,49 +31,33 @@ export default function AboutSection() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-4xl md:text-5xl lg:text-[3.75rem] font-display font-semibold tracking-tighter leading-[1.05] text-text-main mb-8"
             >
-              Songs written at the kitchen table,
-              <br />
-              <span className="italic text-accent/90 font-light">sung where they belong.</span>
+              Zachary Walker
             </motion.h2>
 
-            <div className="space-y-6 text-text-muted text-base leading-relaxed font-light">
-              <p className="text-text-main font-normal text-lg sm:text-xl leading-relaxed">
-                I'm Zachary Walker — I grew up in Topeka, Kansas, and I've been playing guitar since I was a teenager. Music was always around the house, and I picked up the instrument the way most people do: learning songs I liked, figuring out chords from records, and eventually writing my own.
+            <div className="space-y-5 text-text-muted text-[15px] leading-relaxed font-light max-w-xl">
+              <p>
+                Topeka, Kansas. Acoustic guitar, honest vocals, original songs and
+                covers that actually fit the room. Folk, rock, indie, pop — whatever
+                the set calls for.
               </p>
-
-              <p className="text-[15px]">
-                For years, music stayed personal — something I did at home, for friends, at the occasional open mic. In 2023, I decided to take it further. I recorded and released my first original, <em>Love and Madness</em>, and started performing publicly around northeast Kansas. That year I began a recurring lounge residency at B&amp;B Theatres Topeka Wheatfield 9, where I still play regularly.
+              <p>
+                Currently holding a recurring residency at B&amp;B Theatres Topeka
+                Wheatfield 9 and playing venues across northeast Kansas.
               </p>
-
-              <p className="text-[15px]">
-                My sets draw from folk, rock, indie, and pop — a mix of originals and covers arranged for solo acoustic guitar and vocals. I keep things simple: one voice, one guitar, and songs that connect. Sets run 60, 90, or 180 minutes depending on the room and the occasion.
+              <p>
+                First original release: <em className="text-text-main">Love and Madness</em> (2023).
+                More on the way.
               </p>
-
-              <p className="text-[15px]">
-                I'm available for private events, weddings, restaurant and bar residencies, corporate engagements, house concerts, and festival programming. If you'd like to book a show, use the booking link below and I'll follow up to confirm set length, song preferences, and the gear I'll bring.
+              <p>
+                Open for private events, weddings, bar and restaurant gigs, house
+                concerts, festivals, and session work.
               </p>
             </div>
 
-            <motion.figure
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="my-10 pl-6 border-l-2 border-accent/40 relative"
-            >
-              <Quote size={20} className="absolute -left-3 -top-1 text-accent/60 bg-surface p-0.5 rounded-full" />
-              <blockquote className="text-xl md:text-2xl font-display italic text-text-main/90 leading-snug">
-                "If the words are honest and the guitar's in tune, that's most of the job."
-              </blockquote>
-              <figcaption className="text-[11px] uppercase tracking-[0.2em] text-accent/80 font-mono mt-3">
-                - Zachary Walker
-              </figcaption>
-            </motion.figure>
-
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 pt-8 border-t border-text-muted/10">
               <Fact icon={<MapPin size={14} />} label="Based" value="Topeka, KS" />
-              <Fact icon={<Music size={14} />} label="Genre" value="Folk / Country" />
-              <Fact icon={<Mic size={14} />} label="Sets" value="Varies" />
+              <Fact icon={<Music size={14} />} label="Genre" value="Folk · Rock · Indie · Pop" />
+              <Fact icon={<Mic size={14} />} label="Format" value="Solo Acoustic" />
               <Fact icon={<Calendar size={14} />} label="Active Since" value="2023" />
             </div>
 
