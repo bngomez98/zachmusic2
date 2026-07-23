@@ -18,30 +18,36 @@ export default function About() {
 
         <div className="space-y-5 text-sm md:text-[15px] leading-relaxed text-text-muted max-w-2xl mx-auto">
           <p>
-            Topeka, Kansas. Acoustic guitar, honest vocals, original songs and
-            covers that actually fit the room. Folk, rock, indie, pop — whatever
-            the set calls for.
+            Zachary Walker is an independent singer-songwriter based in Topeka, Kansas.
+            His work centers on acoustic guitar and vocal performance, with material that
+            spans original songs and a curated selection of covers across folk, rock,
+            indie, and pop.
           </p>
           <p>
-            Currently holding a recurring residency at B&amp;B Theatres Topeka
-            Wheatfield 9 and playing venues across northeast Kansas.
+            He performs regularly in northeast Kansas, including a recurring lounge
+            residency at B&amp;B Theatres Topeka Wheatfield 9. Sets are configured for the
+            room — typically 60, 90, or 180 minutes — and arranged for venues that need
+            attentive background music or a focused listening environment.
           </p>
           <p>
-            First original release: <em className="text-text-main">Love and Madness</em> (2023).
-            More on the way.
+            Released material includes the original recording <em className="text-text-main">Love and Madness</em>{' '}
+            (2023). Additional originals and live recordings are in development.
           </p>
           <p>
-            Open for private events, weddings, bar and restaurant gigs, house
-            concerts, festivals, and session work.
+            Available for: private events, weddings and ceremonies, restaurant and bar
+            residencies, corporate engagements, house concerts, festival and public-show
+            programming, and select collaboration, co-writing, and session work.
           </p>
           <p>
+            Booking inquiries:{' '}
             <a className="text-accent hover:underline" href="mailto:booking@zacharywalkermusic.com">
               booking@zacharywalkermusic.com
             </a>{' '}
-            ·{' '}
+            or{' '}
             <a className="text-accent hover:underline" href="#booking">
               booking form
             </a>
+            . Standard reply within two business days.
           </p>
         </div>
 
