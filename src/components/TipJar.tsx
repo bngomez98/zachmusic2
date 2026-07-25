@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Coffee, Heart, X, Copy, Check, ExternalLink } from 'lucide-react';
+import { Coffee, Heart, X, Copy, Check, ExternalLink, HandHeart } from 'lucide-react';
+import { LINKS } from '../data';
 
 const HANDLE = 'fullmetalzcw';
 
@@ -106,6 +107,26 @@ export default function TipJar({ open, onClose }: Props) {
             </div>
 
             <div className="px-6 py-6">
+              <a
+                href={LINKS.gofundme}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-4 p-4 mb-5 rounded-xl border border-accent/20 bg-accent/[0.04] hover:border-accent/40 hover:bg-accent/[0.08] transition-all"
+              >
+                <div className="w-10 h-10 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <HandHeart size={18} className="text-accent" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">Help a Father Fight for His Family</p>
+                  <p className="text-[11px] text-text-muted mt-1 leading-relaxed">Your support means the world. Every contribution makes a difference.</p>
+                  <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-accent font-semibold mt-2">
+                    GoFundMe <ExternalLink size={10} />
+                  </span>
+                </div>
+              </a>
+
+              <div className="w-full h-px bg-white/5 mb-5" />
+
               <p className="text-text-muted text-xs mb-5 leading-relaxed">
                 Independent music is fueled by community. If something you heard moved you, a tip keeps the strings
                 fresh and the next song on its way.

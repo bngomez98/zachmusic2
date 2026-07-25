@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Instagram, Facebook, Mail, ArrowRight, Copyright } from 'lucide-react';
+import { Instagram, Facebook, Mail, ArrowRight, Copyright, Heart } from 'lucide-react';
 import { LINKS } from '../data';
 import { LegalDoc } from './LegalModal';
 
 interface Props {
   onOpenLegal: (doc: Exclude<LegalDoc, null>) => void;
   onOpenConsent: () => void;
+  onOpenTip: () => void;
 }
 
-export default function Footer({ onOpenLegal, onOpenConsent }: Props) {
+export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle');
@@ -144,6 +145,7 @@ export default function Footer({ onOpenLegal, onOpenConsent }: Props) {
             <button onClick={() => onOpenLegal('copyright')} className="hover:text-accent transition-colors tracking-widest">Copyright</button>
             <button onClick={() => onOpenLegal('cookies')} className="hover:text-accent transition-colors tracking-widest">Cookies</button>
             <button onClick={onOpenConsent} className="hover:text-accent transition-colors tracking-widest">Preferences</button>
+            <button onClick={onOpenTip} className="hover:text-accent transition-colors tracking-widest inline-flex items-center gap-1"><Heart size={10} className="text-accent/70" />Support</button>
             <a href="mailto:mgmt@zacharywalkermusic.com" className="hover:text-accent transition-colors tracking-widest">Contact</a>
           </div>
           <div className="flex gap-6">

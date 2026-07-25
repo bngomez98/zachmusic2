@@ -24,6 +24,7 @@ export default function App() {
     <div className="min-h-screen bg-base text-text-main">
       <Nav
         onOpenSearch={() => setSearchOpen(true)}
+        onOpenTip={() => setTipOpen(true)}
       />
 
       <main>
@@ -38,12 +39,13 @@ export default function App() {
       <Footer
         onOpenLegal={setLegalDoc}
         onOpenConsent={openConsent}
+        onOpenTip={() => setTipOpen(true)}
       />
 
       <StickyBookingCTA />
       <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} onOpenConsent={openConsent} />
       <TipJar open={tipOpen} onClose={() => setTipOpen(false)} />
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} onOpenLegal={setLegalDoc} onOpenTip={() => setTipOpen(true)} />
       <CookieConsent onOpenPolicy={() => setLegalDoc('cookies')} />
     </div>
   );

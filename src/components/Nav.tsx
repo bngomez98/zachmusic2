@@ -1,13 +1,14 @@
-import { Instagram, Facebook, Menu, X, Search } from 'lucide-react';
+import { Instagram, Facebook, Menu, X, Search, Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LINKS } from '../data';
 
 interface Props {
   onOpenSearch: () => void;
+  onOpenTip: () => void;
 }
 
-export default function Nav({ onOpenSearch }: Props) {
+export default function Nav({ onOpenSearch, onOpenTip }: Props) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -53,6 +54,13 @@ export default function Nav({ onOpenSearch }: Props) {
               </a>
             ))}
             <button
+              onClick={onOpenTip}
+              className="text-xs font-medium tracking-[0.2em] text-text-muted hover:text-accent transition-colors flex items-center gap-1.5"
+            >
+              <Heart size={12} className="text-accent/70" />
+              SUPPORT
+            </button>
+            <button
               onClick={onOpenSearch}
               aria-label="Search"
               className="flex items-center gap-2 text-text-muted hover:text-accent transition-colors text-xs"
@@ -97,6 +105,13 @@ export default function Nav({ onOpenSearch }: Props) {
                   {link.name}
                 </a>
               ))}
+              <button
+                onClick={() => { setIsOpen(false); onOpenTip(); }}
+                className="text-3xl font-display font-medium tracking-widest text-accent hover:text-accent/80 transition-colors flex items-center gap-3"
+              >
+                <Heart size={24} className="fill-accent/30" />
+                SUPPORT
+              </button>
               <div className="w-16 h-px bg-text-muted/30 my-2" />
               <div className="flex gap-8">
                 <a href={LINKS.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="text-text-muted hover:text-accent transition-colors">
