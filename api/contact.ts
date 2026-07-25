@@ -5,7 +5,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import {
   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
   EMAIL_RE, supabaseApiUrl, supabaseHeaders, extractMeta,
-} from './_utils';
+} from './_utils.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

@@ -9,7 +9,7 @@ import {
   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
   GMAIL_USER, GMAIL_APP_PASSWORD,
   EMAIL_RE, esc, supabaseApiUrl, supabaseHeaders, buildWelcomeHtml,
-} from './_utils';
+} from './_utils.js';
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
