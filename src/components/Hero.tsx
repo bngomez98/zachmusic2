@@ -1,24 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { Play, ChevronDown, Volume2, VolumeX } from 'lucide-react';
-import posterImg from '../assets/images/regenerated_image_1781019033978.jpg';
 
 export default function Hero() {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 1000], [0, 280]);
   const opacity = useTransform(scrollY, [0, 600], [1, 0]);
   const [isMuted, setIsMuted] = useState(true);
-  const [videoReady, setVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.readyState >= 2) setVideoReady(true);
-    const onCanPlay = () => setVideoReady(true);
-    v.addEventListener('canplay', onCanPlay);
 
-    // Pause video when off-screen to save resources/bandwidth
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -31,47 +25,30 @@ export default function Hero() {
     );
     io.observe(v);
 
-    return () => {
-      v.removeEventListener('canplay', onCanPlay);
-      io.disconnect();
-    };
+    return () => { io.disconnect(); };
   }, []);
 
   return (
-    <section className="relative w-full h-screen h-[100svh] flex flex-col justify-between overflow-hidden bg-base">
-      {/* Background Media */}
-      <motion.div className="absolute inset-0 z-0 bg-black" style={{ y, opacity }}>
-        {/* Cinematic gradients */}
-        <div className="absolute inset-0 bg-gradient-to-t from-base via-base/30 to-base/80 z-20 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-base/60 via-transparent to-base/40 z-20 pointer-events-none" />
-        <div className="absolute inset-0 bg-base/30 z-10 pointer-events-none" />
+    <section className="relative w-full h-screen h-[100svh] flex flex-col justify-between overflow-hidden bg-black">
+      {/* Video Background */}
+      <motion.div className="absolute inset-0 z-0" style={{ y, opacity }}>
+        <div className="absolute inset-0 bg-gradient-to-t from-base via-transparent to-base/60 z-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-base/40 via-transparent to-base/30 z-20 pointer-events-none" />
 
-        {/* Poster image shown until video is ready, prevents flash of black */}
-        <img
-          src={posterImg}
-          alt=""
-          aria-hidden="true"
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoReady ? 'opacity-0' : 'opacity-60'}`}
-        />
-
-        <motion.video
+        <video
           ref={videoRef}
           autoPlay
           muted={isMuted}
           loop
           playsInline
-          preload="metadata"
-          poster={posterImg}
+          preload="auto"
           disablePictureInPicture
           controlsList="nodownload noremoteplayback"
           onContextMenu={(e) => e.preventDefault()}
-          initial={{ scale: 1.15 }}
-          animate={{ scale: 1.05 }}
-          transition={{ duration: 18, ease: 'easeOut' }}
-          className={`absolute inset-0 w-full h-full object-cover mix-blend-screen transition-opacity duration-[1500ms] ${videoReady ? 'opacity-60' : 'opacity-0'}`}
+          className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/highlight.mp4" type="video/mp4" />
-        </motion.video>
+        </video>
       </motion.div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 flex flex-col justify-between h-full pt-32 pb-24">
