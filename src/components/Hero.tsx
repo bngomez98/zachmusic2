@@ -47,7 +47,7 @@ export default function Hero() {
           onContextMenu={(e) => e.preventDefault()}
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="/highlight.mp4" type="video/mp4" />
+          <source src="/hero-new.mp4" type="video/mp4" />
         </video>
       </motion.div>
 
