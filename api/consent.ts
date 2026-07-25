@@ -28,8 +28,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       headers: { ...supabaseHeaders(), 'Prefer': 'return=minimal' },
       body: JSON.stringify({
         fingerprint: (fingerprint || '').toString().slice(0, 64),
-        analytics: analytics ? 1 : 0,
-        marketing: marketing ? 1 : 0,
+        analytics: Boolean(analytics),
+        marketing: Boolean(marketing),
         ip,
         user_agent: userAgent,
       }),
