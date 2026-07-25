@@ -12,6 +12,7 @@ export const LINKS = {
   paypal: 'https://www.paypal.com/paypalme/fullmetalzcw',
   cashapp: 'https://cash.app/$fullmetalzcw',
   venmo: 'https://venmo.com/u/fullmetalzcw',
+  gofundme: 'https://www.gofundme.com/f/help-a-single-father-fight-for-custody-84ajp',
 };
 
 export const SHOWS = [
