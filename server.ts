@@ -341,9 +341,6 @@ async function startServer() {
         ],
       );
 
-      // Supabase can handle sending confirmation email via trigger if needed
-      // No Resend integration here
-
       res.status(201).json({ message: "Booking inquiry received" });
     } catch (err) {
       console.error("booking error", err);
