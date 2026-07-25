@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 
-export default defineConfig(() => {
+export default defineConfig(({ isSsrBuild }) => {
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -18,13 +18,18 @@ export default defineConfig(() => {
       reportCompressedSize: false,
       assetsInlineLimit: 4096,
       rollupOptions: {
-        output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-            'motion-vendor': ['motion'],
-            'icons-vendor': ['lucide-react'],
-          },
-        },
+        // Vendor splitting is a browser-loading optimisation. In the SSR build
+        // these packages are external, and naming an external module in
+        // manualChunks is a hard Rollup error — so apply it to the client only.
+        output: isSsrBuild
+          ? {}
+          : {
+              manualChunks: {
+                'react-vendor': ['react', 'react-dom'],
+                'motion-vendor': ['motion'],
+                'icons-vendor': ['lucide-react'],
+              },
+            },
       },
     },
     server: {
