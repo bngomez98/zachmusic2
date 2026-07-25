@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Phone } from 'lucide-react';
 import { SHOWS } from '../data';
 
 function parseShowDate(dateStr: string): Date {
@@ -123,37 +122,13 @@ export default function ShowsSection() {
           )}
         </div>
 
-        <div className="border border-text-muted/10 rounded-lg p-8 md:p-12 bg-base/40 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full filter blur-[80px] pointer-events-none" />
-
-          <div className="relative z-10 max-w-md">
-            <h3 className="text-2xl font-display font-semibold tracking-tight mb-3">Booking &amp; Inquiries</h3>
-            <p className="text-text-muted text-sm mb-10 leading-relaxed font-light">
-              For private events, venue booking, or management inquiries, please reach out directly.
-            </p>
-
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 group cursor-pointer">
-                <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-surface flex items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
-                  <Mail size={16} className="text-text-muted group-hover:text-accent transition-colors" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Email</p>
-                  <a href="mailto:mgmt@zacharywalkermusic.com" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">mgmt@zacharywalkermusic.com</a>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 group cursor-pointer">
-                <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-surface flex items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
-                  <Phone size={16} className="text-text-muted group-hover:text-accent transition-colors" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Phone</p>
-                  <a href="tel:+17854988881" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">785-498-8881</a>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="text-center pt-8">
+          <a
+            href="#booking"
+            className="inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-accent font-semibold hover:gap-3 transition-all duration-300"
+          >
+            Want to book? Get in touch →
+          </a>
         </div>
       </div>
     </section>

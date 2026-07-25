@@ -347,7 +347,7 @@ export default function BookingSection() {
 }
 
 const inputCls =
-  'w-full bg-base/60 border border-white/5 rounded-md px-4 py-3 text-sm text-text-main placeholder-text-muted/40 focus:border-accent/60 focus:outline-none transition-colors';
+  'w-full bg-base/60 border border-white/5 rounded-md px-4 py-3 text-sm text-text-main placeholder-text-muted/40 focus:border-accent/60 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 transition-colors';
 
 function Field({
   label,

@@ -15,6 +15,11 @@
   html {
     scroll-behavior: smooth;
   }
+
+  :focus-visible {
+    outline: 1px solid color-mix(in srgb, #D4A853 60%, transparent);
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
