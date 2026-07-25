@@ -7,7 +7,7 @@ import {
   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
   GMAIL_USER, GMAIL_APP_PASSWORD,
   EMAIL_RE, esc, supabaseApiUrl, supabaseHeaders, extractMeta, buildWelcomeHtml,
-} from './_utils';
+} from './_utils.js';
 
 async function sendWelcomeEmail(to: string, name: string | null) {
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) return;

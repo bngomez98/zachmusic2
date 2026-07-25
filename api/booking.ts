@@ -7,7 +7,7 @@ import {
   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
   GMAIL_USER, GMAIL_APP_PASSWORD,
   EMAIL_RE, esc, supabaseApiUrl, supabaseHeaders, extractMeta,
-} from './_utils';
+} from './_utils.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
