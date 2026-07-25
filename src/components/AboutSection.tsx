@@ -91,9 +91,7 @@ export default function AboutSection() {
 
           <div className="flex-1 md:order-2 order-1 w-full relative md:sticky md:top-24">
             <div className="absolute -inset-4 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
-            <motion.div
-              animate={{ y: [-10, 10, -10] }}
-              transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+            <div
               className="rounded-2xl overflow-hidden border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] relative group"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 mix-blend-overlay z-10 pointer-events-none" />
@@ -102,20 +100,12 @@ export default function AboutSection() {
                 alt="Zachary Walker performing acoustic guitar"
                 loading="lazy"
                 decoding="async"
-                draggable={false}
-                onContextMenu={(e) => e.preventDefault()}
-                className="w-full h-auto object-cover aspect-[4/5] group-hover:scale-110 transition-transform duration-[1.5s] ease-out select-none"
+                className="w-full h-auto object-cover aspect-[4/5] group-hover:scale-105 transition-transform duration-[1.5s] ease-out"
               />
               <div className="absolute bottom-4 left-4 z-20 bg-base/80 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-text-muted font-mono flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                 Live / Topeka, KS
               </div>
-            </motion.div>
-
-            <div className="grid grid-cols-3 gap-3 mt-6">
-              <MiniStat label="Originals" value="Released" />
-              <MiniStat label="Covers" value="Curated" />
-              <MiniStat label="Bookings" value="Open" />
             </div>
           </div>
         </div>
@@ -136,11 +126,3 @@ function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; va
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border border-white/5 rounded-lg p-3 text-center bg-base/30 backdrop-blur-sm">
-      <p className="text-[9px] uppercase tracking-[0.18em] text-text-muted/60 font-mono mb-0.5">{label}</p>
-      <p className="text-xs text-accent font-medium">{value}</p>
-    </div>
-  );
-}

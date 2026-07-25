@@ -29,7 +29,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full h-screen h-[100svh] flex flex-col justify-between overflow-hidden bg-black">
+    <section className="relative w-full h-[100svh] flex flex-col justify-between overflow-hidden bg-black">
       {/* Video Background */}
       <motion.div className="absolute inset-0 z-0" style={{ y, opacity }}>
         <div className="absolute inset-0 bg-gradient-to-t from-base via-transparent to-base/60 z-20 pointer-events-none" />
@@ -44,7 +44,6 @@ export default function Hero() {
           preload="auto"
           disablePictureInPicture
           controlsList="nodownload noremoteplayback"
-          onContextMenu={(e) => e.preventDefault()}
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/hero-new.mp4" type="video/mp4" />

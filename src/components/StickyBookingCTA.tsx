@@ -38,7 +38,7 @@ export default function StickyBookingCTA() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="hidden sm:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-[140] items-center gap-2 bg-surface/95 backdrop-blur-md border border-accent/40 rounded-full px-2 py-2 pl-5 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
+          className="flex fixed bottom-6 left-1/2 -translate-x-1/2 z-[140] items-center gap-2 bg-surface/95 backdrop-blur-md border border-accent/40 rounded-full px-2 py-2 pl-4 sm:pl-5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] max-w-[calc(100vw-2rem)]"
         >
           <Calendar size={14} className="text-accent" />
           <span className="text-[11px] uppercase tracking-[0.2em] text-text-main font-semibold">

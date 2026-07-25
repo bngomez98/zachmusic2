@@ -106,8 +106,8 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
                 </button>
               </div>
             </form>
-            {status === 'success' && <p className="text-accent text-xs mt-3">Thanks for subscribing. Watch your inbox.</p>}
-            {status === 'error' && <p className="text-red-400 text-xs mt-3">{errMsg}</p>}
+            {status === 'success' && <p role="status" className="text-accent text-xs mt-3">Thanks for subscribing. Watch your inbox.</p>}
+            {status === 'error' && <p role="alert" className="text-red-400 text-xs mt-3">{errMsg}</p>}
             <p className="text-[10px] text-text-muted/50 mt-4 leading-relaxed">
               By subscribing you agree to our{' '}
               <button onClick={() => onOpenLegal('privacy')} className="underline hover:text-accent transition-colors">Privacy Policy</button>.
