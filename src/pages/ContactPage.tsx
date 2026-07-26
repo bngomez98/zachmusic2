@@ -89,7 +89,7 @@ export default function ContactPage() {
           </h1>
           <div className="w-10 h-[1px] bg-accent/40" />
           <p className="text-text-muted text-base max-w-2xl">
-            Have a question, want to collaborate, or just want to say hello? Reach out below or email directly.
+            Reach out below or email directly.
           </p>
         </div>
 
@@ -193,9 +193,9 @@ export default function ContactPage() {
             {/* Newsletter signup */}
             <div className="bg-surface/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 md:p-8">
               <h3 className="font-display text-lg text-accent mb-2 tracking-tight">Newsletter</h3>
-              <p className="text-sm text-text-muted mb-5">Sign up to receive updates on new releases, live shows, and exclusive content.</p>
+              <p className="text-sm text-text-muted mb-5">Show dates, new releases, and occasional updates.</p>
               {nlStatus === 'success' ? (
-                <p className="text-accent text-xs flex items-center gap-2"><CheckCircle size={14} /> You're in — check your inbox.</p>
+                <p className="text-accent text-xs flex items-center gap-2"><CheckCircle size={14} /> Subscribed.</p>
               ) : (
                 <form onSubmit={onSubscribe} className="flex flex-col gap-3">
                   <input
@@ -229,7 +229,7 @@ export default function ContactPage() {
             <div className="bg-accent/5 border border-accent/30 rounded-2xl p-6">
               <p className="text-text-main text-sm font-medium mb-1">Looking to book?</p>
               <p className="text-text-muted text-xs leading-relaxed mb-4">
-                For booking inquiries, use the dedicated booking form with all the details I need to give you a quote.
+                Use the booking form for event inquiries and quotes.
               </p>
               <a
                 href="/booking"

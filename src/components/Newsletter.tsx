@@ -28,8 +28,7 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="bg-base py-16 relative overflow-hidden border-t border-text-muted/10">
-      <div className="absolute inset-0 bg-gradient-to-b from-base via-surface/30 to-base pointer-events-none" />
+    <section className="bg-base py-14 relative overflow-hidden border-t border-text-muted/10">
 
       <div className="max-w-2xl mx-auto px-6 lg:px-12 relative z-10 text-center">
         <motion.div
@@ -40,15 +39,15 @@ export default function Newsletter() {
         >
           <span className="flex items-center justify-center gap-2 text-[12px] font-medium tracking-[0.08em] uppercase text-accent leading-relaxed mb-4">
             <span className="w-4 h-[1px] bg-accent/60" />
-            Stay Connected
+            Newsletter
             <span className="w-4 h-[1px] bg-accent/60" />
           </span>
 
           <h2 className="text-2xl md:text-3xl font-display font-semibold tracking-tight text-text-main mb-3">
-            Get show dates & new music first
+            Shows, Releases & Updates
           </h2>
           <p className="text-text-muted text-sm max-w-md mx-auto mb-8">
-            No spam — just upcoming shows, new releases, and the occasional behind-the-scenes update.
+            Upcoming show dates, new music, and occasional updates. Unsubscribe anytime.
           </p>
 
           {status === 'success' ? (
@@ -58,7 +57,7 @@ export default function Newsletter() {
               className="flex items-center justify-center gap-2 text-accent text-sm"
             >
               <CheckCircle size={18} />
-              <span>You're in — check your inbox for a welcome note.</span>
+              <span>Subscribed — check your inbox.</span>
             </motion.div>
           ) : status === 'already' ? (
             <motion.div
@@ -67,7 +66,7 @@ export default function Newsletter() {
               className="flex items-center justify-center gap-2 text-accent text-sm"
             >
               <CheckCircle size={18} />
-              <span>You're already subscribed — thanks for being here.</span>
+              <span>Already subscribed.</span>
             </motion.div>
           ) : (
             <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
@@ -109,7 +108,7 @@ export default function Newsletter() {
           )}
 
           <p className="text-text-muted/40 text-[10px] mt-4 tracking-wide">
-            Unsubscribe anytime. We respect your privacy.
+            No spam. Unsubscribe anytime.
           </p>
         </motion.div>
       </div>

@@ -106,10 +106,10 @@ export default function CookieConsent({ onOpenPolicy }: Props) {
                   <Cookie size={16} className="text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display text-base text-text-main tracking-tight">We value your privacy</h3>
+                  <h3 className="font-display text-base text-text-main tracking-tight">Cookie Preferences</h3>
                   <p className="text-text-muted text-xs mt-1 leading-relaxed">
-                    We use essential cookies to make this site work and, with your permission, optional cookies for
-                    analytics and to improve your experience.{' '}
+                    This site uses essential cookies to function and, with your permission, optional cookies for
+                    analytics.{' '}
                     {onOpenPolicy && (
                       <button onClick={onOpenPolicy} className="text-accent hover:underline">Cookie Policy</button>
                     )}

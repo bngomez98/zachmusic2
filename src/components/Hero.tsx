@@ -107,17 +107,17 @@ export default function Hero() {
           >
             <Link
               to="/booking"
-              className="group inline-flex items-center justify-center gap-2 bg-accent text-base px-8 py-4 font-semibold text-[14px] tracking-[0.18em] uppercase hover:bg-accent/90 transition-all duration-300 shadow-[0_10px_40px_rgba(212,168,83,0.25)]"
+              className="group inline-flex items-center justify-center gap-2 bg-accent text-base px-8 py-4 font-semibold text-[13px] tracking-[0.2em] uppercase hover:bg-accent/90 transition-all duration-300"
             >
               Book a Show
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('zw:open-player', { detail: { src: '/loveandmadness.mp3' } }))}
-              className="group inline-flex items-center justify-center gap-2 border border-text-main/20 hover:border-accent text-text-main px-8 py-4 font-normal text-[14px] hover:bg-accent transition-all duration-300"
+              className="group inline-flex items-center justify-center gap-2 border border-white/15 hover:border-accent/60 text-text-main px-8 py-4 font-normal text-[13px] tracking-[0.1em] uppercase hover:text-accent transition-all duration-300 backdrop-blur-sm"
             >
-              <Play size={16} className="fill-current group-hover:text-base opacity-90" />
-              <span className="group-hover:text-base transition-colors duration-300">Listen</span>
+              <Play size={14} className="fill-current opacity-80" />
+              Listen
             </button>
           </motion.div>
         </div>
@@ -126,15 +126,14 @@ export default function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
+        transition={{ delay: 2, duration: 1 }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 pointer-events-none"
       >
-        <span className="text-[10px] tracking-[0.2em] uppercase text-text-muted/60">Scroll</span>
         <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <ChevronDown size={16} className="text-accent/50" />
+          <ChevronDown size={14} className="text-text-muted/30" />
         </motion.div>
       </motion.div>
 
