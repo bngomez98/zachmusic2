@@ -1,9 +1,25 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Phone } from 'lucide-react';
 import { SHOWS } from '../data';
 
+function parseShowDate(dateStr: string): Date {
+  const [mon, day] = dateStr.split(' ');
+  const months: Record<string, number> = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
+  const year = new Date().getFullYear();
+  return new Date(year, months[mon] ?? 0, parseInt(day, 10) + 1);
+}
+
 export default function ShowsSection() {
+  const { upcoming, past } = useMemo(() => {
+    const now = new Date();
+    const u: typeof SHOWS = [];
+    const p: typeof SHOWS = [];
+    for (const s of SHOWS) {
+      (parseShowDate(s.date) > now ? u : p).push(s);
+    }
+    return { upcoming: u, past: p };
+  }, []);
+
   return (
     <section id="shows" className="bg-surface py-32 text-text-main border-y border-text-muted/10">
       <div className="max-w-4xl mx-auto px-6 lg:px-12">
@@ -13,19 +29,27 @@ export default function ShowsSection() {
             Live
             <span className="w-4 h-[1px] bg-accent/60"></span>
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold tracking-tight">Upcoming Shows</h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-semibold tracking-tight">
+            {upcoming.length > 0 ? 'Upcoming Shows' : 'Shows'}
+          </h2>
           <div className="w-10 h-[1px] bg-accent/40" />
         </div>
 
         <div className="flex flex-col mb-24 border-t border-text-muted/10">
-          {SHOWS.map((show, i) => (
+          {upcoming.length === 0 && (
+            <div className="py-16 text-center text-text-muted text-sm">
+              No upcoming shows scheduled — check back soon or{' '}
+              <a href="#booking" className="text-accent hover:underline">book a private event</a>.
+            </div>
+          )}
+          {upcoming.map((show, i) => (
             <motion.div
               key={show.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{ duration: 0.8, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="group flex flex-col md:flex-row md:items-center justify-between py-12 border-b border-text-muted/10 hover:bg-white/[0.01] transition-all px-0 hover:px-6 -mx-0 hover:-mx-6 gap-6 relative overflow-hidden"
+              className="group flex flex-col md:flex-row md:items-center justify-between py-12 border-b border-text-muted/10 hover:bg-white/[0.02] transition-colors gap-6 relative overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/[0.03] to-accent/0 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none" />
               <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-accent scale-y-0 group-hover:scale-y-100 transition-transform origin-center duration-500 ease-out" />
@@ -71,39 +95,40 @@ export default function ShowsSection() {
               </div>
             </motion.div>
           ))}
+
+          {past.length > 0 && (
+            <>
+              <div className="pt-12 pb-4">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-text-muted/50 font-mono">Past</span>
+              </div>
+              {past.map((show) => (
+                <div
+                  key={show.id}
+                  className="flex flex-col md:flex-row md:items-center justify-between py-8 border-b border-text-muted/5 gap-4 opacity-40"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-12">
+                    <div className="flex md:flex-col items-baseline md:items-center gap-3 md:gap-0 min-w-[100px]">
+                      <span className="text-text-muted/60 font-light tracking-[0.2em] uppercase text-xs">{show.date.split(' ')[0]}</span>
+                      <span className="text-text-muted font-display font-medium text-3xl tracking-tighter">{show.date.split(' ')[1]}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-display tracking-tight text-text-muted">{show.title}</h3>
+                      <p className="text-text-muted/60 text-xs tracking-wide">{show.location}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
 
-        <div className="border border-text-muted/10 rounded-lg p-8 md:p-12 bg-base/40 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full filter blur-[80px] pointer-events-none" />
-
-          <div className="relative z-10 max-w-md">
-            <h3 className="text-2xl font-display font-semibold tracking-tight mb-3">Booking &amp; Inquiries</h3>
-            <p className="text-text-muted text-sm mb-10 leading-relaxed font-light">
-              For private events, venue booking, or management inquiries, please reach out directly.
-            </p>
-
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 group cursor-pointer">
-                <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-surface flex items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
-                  <Mail size={16} className="text-text-muted group-hover:text-accent transition-colors" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Email</p>
-                  <a href="mailto:mgmt@zacharywalkermusic.com" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">mgmt@zacharywalkermusic.com</a>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 group cursor-pointer">
-                <div className="w-10 h-10 rounded-full border border-text-muted/10 bg-surface flex items-center justify-center group-hover:border-accent/40 group-hover:bg-accent/5 transition-colors">
-                  <Phone size={16} className="text-text-muted group-hover:text-accent transition-colors" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-text-muted/60 font-mono mb-1">Phone</p>
-                  <a href="tel:+17854988881" className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">785-498-8881</a>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="text-center pt-8">
+          <a
+            href="#booking"
+            className="inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-accent font-semibold hover:gap-3 transition-all duration-300"
+          >
+            Want to book? Get in touch →
+          </a>
         </div>
       </div>
     </section>

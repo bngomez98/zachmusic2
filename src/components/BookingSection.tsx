@@ -204,6 +204,7 @@ export default function BookingSection() {
                     type="date"
                     value={form.eventDate}
                     onChange={(e) => update('eventDate', e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
                     className={inputCls}
                     required
                   />
@@ -268,7 +269,7 @@ export default function BookingSection() {
                 </div>
 
                 {status === 'error' && errMsg && (
-                  <div className="md:col-span-2 flex items-center gap-2 text-red-400 text-xs">
+                  <div role="alert" className="md:col-span-2 flex items-center gap-2 text-red-400 text-xs">
                     <AlertCircle size={14} /> {errMsg}
                   </div>
                 )}
@@ -290,7 +291,7 @@ export default function BookingSection() {
                     )}
                   </button>
                   <a
-                    href="mailto:booking@zacharywalkermusic.com"
+                    href="mailto:mgmt@zacharywalkermusic.com"
                     className="inline-flex items-center justify-center gap-2 text-text-muted hover:text-accent transition-colors text-xs uppercase tracking-widest"
                   >
                     <Mail size={14} /> Or email directly
@@ -332,10 +333,10 @@ export default function BookingSection() {
                 Not ready to fill out the full form? Email and I'll reply personally.
               </p>
               <a
-                href="mailto:booking@zacharywalkermusic.com"
+                href="mailto:mgmt@zacharywalkermusic.com"
                 className="inline-flex items-center gap-2 text-accent text-xs uppercase tracking-[0.2em] font-semibold hover:gap-3 transition-all"
               >
-                <Mail size={14} /> booking@zacharywalkermusic.com
+                <Mail size={14} /> mgmt@zacharywalkermusic.com
               </a>
             </div>
           </aside>
@@ -346,7 +347,7 @@ export default function BookingSection() {
 }
 
 const inputCls =
-  'w-full bg-base/60 border border-white/5 rounded-md px-4 py-3 text-sm text-text-main placeholder-text-muted/40 focus:border-accent/60 focus:outline-none transition-colors';
+  'w-full bg-base/60 border border-white/5 rounded-md px-4 py-3 text-sm text-text-main placeholder-text-muted/40 focus:border-accent/60 focus:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 transition-colors';
 
 function Field({
   label,

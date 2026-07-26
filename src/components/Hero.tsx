@@ -29,7 +29,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full h-screen h-[100svh] flex flex-col justify-between overflow-hidden bg-black">
+    <section className="relative w-full h-[100svh] flex flex-col justify-between overflow-hidden bg-black">
       {/* Video Background */}
       <motion.div className="absolute inset-0 z-0" style={{ y, opacity }}>
         <div className="absolute inset-0 bg-gradient-to-t from-base via-transparent to-base/60 z-20 pointer-events-none" />
@@ -44,7 +44,6 @@ export default function Hero() {
           preload="auto"
           disablePictureInPicture
           controlsList="nodownload noremoteplayback"
-          onContextMenu={(e) => e.preventDefault()}
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/hero-new.mp4" type="video/mp4" />
@@ -59,7 +58,8 @@ export default function Hero() {
           className="mt-12"
         >
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-[11px] font-semibold tracking-[0.2em] shadow-sm uppercase text-accent leading-relaxed flex items-center gap-3 before:content-[''] before:block before:w-8 before:h-[]">
+            <span className="text-[11px] font-semibold tracking-[0.2em] uppercase text-accent leading-relaxed flex items-center gap-3">
+              <span className="w-8 h-[1px] bg-accent/60" />
               Singer-Songwriter — Topeka, KS
             </span>
             <a
@@ -79,11 +79,13 @@ export default function Hero() {
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col"
           >
-            <h1 className="text-[4.5rem] sm:text-[6.5rem] md:text-[9rem] lg:text-[11rem] font-display font-semibold tracking-tighter text-[#F5F0E8] leading-[0.8] drop-shadow-2xl uppercase relative z-10 mix-blend-plus-lighter">
-              Zachary
-            </h1>
-            <h1 className="text-[5rem] sm:text-[7rem] md:text-[10rem] lg:text-[12rem] font-sans font-light italic tracking-tighter text-accent leading-[0.8] drop-shadow-2xl ml-8 sm:ml-16 md:ml-32 lowercase relative z-20 opacity-90" style={{ fontFamily: 'Inter' }}>
-              Walker
+            <h1 className="flex flex-col">
+              <span className="text-[4.5rem] sm:text-[6.5rem] md:text-[9rem] lg:text-[11rem] font-display font-semibold tracking-tighter text-[#F5F0E8] leading-[0.8] drop-shadow-2xl uppercase relative z-10 mix-blend-plus-lighter">
+                Zachary
+              </span>
+              <span className="text-[5rem] sm:text-[7rem] md:text-[10rem] lg:text-[12rem] font-sans font-light italic tracking-tighter text-accent leading-[0.8] drop-shadow-2xl ml-8 sm:ml-16 md:ml-32 lowercase relative z-20 opacity-90" style={{ fontFamily: 'Inter' }}>
+                Walker
+              </span>
             </h1>
           </motion.div>
 

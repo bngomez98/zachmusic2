@@ -103,7 +103,7 @@ export default function Newsletter() {
           )}
 
           {status === 'error' && errMsg && (
-            <div className="flex items-center justify-center gap-2 text-red-400 text-xs mt-3">
+            <div role="alert" className="flex items-center justify-center gap-2 text-red-400 text-xs mt-3">
               <AlertCircle size={14} /> {errMsg}
             </div>
           )}
