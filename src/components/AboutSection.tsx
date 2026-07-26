@@ -37,17 +37,16 @@ export default function AboutSection() {
 
             <div className="space-y-5 text-text-muted text-[15px] leading-relaxed font-light max-w-xl">
               <p>
-                Topeka, Kansas. Acoustic guitar, honest vocals, original songs and
-                covers that actually fit the room. Folk, rock, indie, pop — whatever
-                the set calls for.
+                Topeka, Kansas. Acoustic guitar, original songs, and covers across
+                folk, rock, indie, and pop.
               </p>
               <p>
                 Currently holding a recurring residency at B&amp;B Theatres Topeka
                 Wheatfield 9 and playing venues across northeast Kansas.
               </p>
               <p>
-                First original release: <em className="text-text-main">Love and Madness</em> (2023).
-                More on the way.
+                Debut release: <em className="text-text-main">Love and Madness</em> (2023).
+                New material in progress.
               </p>
               <p>
                 Open for private events, weddings, bar and restaurant gigs, house
@@ -102,15 +101,14 @@ export default function AboutSection() {
           <div className="flex-1 md:order-2 order-1 w-full relative md:sticky md:top-24">
             <div className="absolute -inset-4 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
             <div
-              className="rounded-2xl overflow-hidden border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] relative group"
+              className="rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative group"
             >
-              <div className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 mix-blend-overlay z-10 pointer-events-none" />
               <img
                 src={aboutImage}
                 alt="Zachary Walker performing acoustic guitar"
                 loading="lazy"
                 decoding="async"
-                className="w-full h-auto object-cover aspect-[4/5] group-hover:scale-105 transition-transform duration-[1.5s] ease-out"
+                className="w-full h-auto object-cover aspect-[4/5] group-hover:scale-[1.02] transition-transform duration-[1.2s] ease-out"
               />
               <div className="absolute bottom-4 left-4 z-20 bg-base/80 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-text-muted font-mono flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />

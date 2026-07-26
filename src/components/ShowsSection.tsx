@@ -42,8 +42,8 @@ export default function ShowsSection() {
         <div className="flex flex-col mb-24 border-t border-text-muted/10">
           {upcoming.length === 0 && (
             <div className="py-16 text-center text-text-muted text-sm">
-              No upcoming shows scheduled — check back soon or{' '}
-              <Link to="/booking" className="text-accent hover:underline">book a private event</Link>.
+              No upcoming shows scheduled.{' '}
+              <Link to="/booking" className="text-accent hover:underline">Book a private event</Link>.
             </div>
           )}
           {upcoming.map((show, i) => (
@@ -53,21 +53,20 @@ export default function ShowsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{ duration: 0.8, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="group flex flex-col md:flex-row md:items-center justify-between py-12 border-b border-text-muted/10 hover:bg-white/[0.02] transition-colors gap-6 relative overflow-hidden"
+              className="group flex flex-col md:flex-row md:items-center justify-between py-10 border-b border-text-muted/10 hover:bg-white/[0.015] transition-colors duration-300 gap-6 relative"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/[0.03] to-accent/0 -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none" />
-              <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-accent scale-y-0 group-hover:scale-y-100 transition-transform origin-center duration-500 ease-out" />
+              <div className="absolute left-0 top-0 bottom-0 w-px bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-16 w-full md:w-2/3 relative z-10">
                 <div className="flex md:flex-col items-baseline md:items-center gap-3 md:gap-0 min-w-[100px]">
                   <span className="text-accent font-light tracking-[0.2em] uppercase text-xs sm:text-sm">
                     {show.date.split(' ')[0]}
                   </span>
-                  <span className="text-text-main font-display font-medium text-4xl sm:text-5xl tracking-tighter group-hover:text-accent transition-colors duration-500">
+                  <span className="text-text-main font-display font-medium text-4xl sm:text-5xl tracking-tighter group-hover:text-accent transition-colors duration-300">
                     {show.date.split(' ')[1]}
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight mb-3 text-text-main group-hover:text-white transition-colors">
+                  <h3 className="text-2xl sm:text-3xl font-semibold font-display tracking-tight mb-3 text-text-main group-hover:text-white transition-colors duration-300">
                     {show.title}
                   </h3>
                   <div className="text-text-muted text-sm tracking-wide font-light flex items-center gap-2 mb-2">
@@ -93,12 +92,12 @@ export default function ShowsSection() {
                     href={show.link}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center border border-accent/40 text-text-main px-8 py-4 text-[10px] sm:text-xs tracking-[0.2em] font-semibold uppercase hover:border-accent hover:bg-accent hover:text-base transition-all duration-300 rounded-full"
+                    className="inline-flex items-center justify-center border border-white/15 text-text-main px-7 py-3.5 text-[10px] sm:text-xs tracking-[0.2em] font-semibold uppercase hover:border-accent hover:text-accent transition-all duration-300 rounded-full"
                   >
-                    Details
+                    Details →
                   </a>
                 ) : (
-                  <span className="inline-flex items-center justify-center px-8 py-4 text-[10px] sm:text-xs tracking-[0.2em] font-semibold uppercase border border-base bg-base/50 text-text-muted/40 rounded-full cursor-not-allowed">
+                  <span className="inline-flex items-center justify-center px-7 py-3.5 text-[10px] sm:text-xs tracking-[0.2em] font-medium uppercase text-text-muted/30 cursor-default">
                     Sold Out
                   </span>
                 )}
@@ -141,7 +140,7 @@ export default function ShowsSection() {
             to="/booking"
             className="inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-accent font-semibold hover:gap-3 transition-all duration-300"
           >
-            Want to book? Get in touch →
+            Booking Inquiries →
           </Link>
         </div>
       </div>

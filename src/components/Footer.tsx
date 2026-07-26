@@ -40,14 +40,14 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
   const year = new Date().getFullYear();
 
   return (
-    <footer id="contact" className="bg-base pt-32 pb-12 text-text-main">
+    <footer id="contact" className="bg-base pt-24 pb-12 text-text-main">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex flex-col md:flex-row justify-between items-start mb-24 gap-16">
+        <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-16">
           <div className="flex flex-col items-start gap-8 max-w-md">
             <div className="w-16 h-16 flex items-center justify-center border border-accent/30 rounded-full mb-4">
               <span className="font-display text-accent text-3xl leading-none mt-1 ml-[2px]">Z</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-display font-medium tracking-tight">Let's Connect</h2>
+            <h2 className="text-4xl md:text-5xl font-display font-medium tracking-tight">Contact</h2>
             <div className="w-10 h-px bg-accent/60" />
             <a href="mailto:mgmt@zacharywalkermusic.com" className="text-text-muted hover:text-accent transition-colors inline-flex items-center gap-3 text-lg font-light tracking-wide group">
               <Mail size={20} className="group-hover:stroke-accent transition-colors duration-300" /> mgmt@zacharywalkermusic.com
@@ -71,7 +71,7 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
 
           <div className="flex w-full md:max-w-sm flex-col bg-surface/50 border border-white/5 p-8 rounded-2xl">
             <h3 className="font-display text-xl mb-2 text-accent">Newsletter</h3>
-            <p className="text-sm text-text-muted mb-6">Sign up to receive updates on new releases, live shows, and exclusive content.</p>
+            <p className="text-sm text-text-muted mb-6">Show dates, new releases, and updates.</p>
             <form onSubmit={handleSubscribe} className="flex flex-col gap-3 w-full">
               <div className="relative">
                 <input
@@ -103,7 +103,7 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
                 </button>
               </div>
             </form>
-            {status === 'success' && <p role="status" className="text-accent text-xs mt-3">Thanks for subscribing. Watch your inbox.</p>}
+            {status === 'success' && <p role="status" className="text-accent text-xs mt-3">Subscribed.</p>}
             {status === 'error' && <p role="alert" className="text-red-400 text-xs mt-3">{errMsg}</p>}
             <p className="text-[10px] text-text-muted/50 mt-4 leading-relaxed">
               By subscribing you agree to our{' '}
@@ -113,14 +113,7 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
           </div>
         </div>
 
-        {/* Massive Typographic Treatment */}
-        <div className="w-full overflow-hidden flex justify-center items-center py-16 opacity-[0.03] select-none pointer-events-none">
-          <h2 className="text-[12vw] font-display font-bold leading-none whitespace-nowrap tracking-tighter">
-            ZACHARY WALKER
-          </h2>
-        </div>
-
-        <div className="border-t border-white/5 pt-8 mb-8">
+        <div className="border-t border-white/5 pt-8 mb-8 mt-8">
           <div className="flex items-start gap-3 text-text-muted text-xs leading-relaxed max-w-3xl">
             <Copyright size={14} className="text-accent flex-shrink-0 mt-0.5" />
             <p>

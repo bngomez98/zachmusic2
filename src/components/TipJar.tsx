@@ -51,7 +51,7 @@ export default function TipJar({ open, onClose }: Props) {
         audience: 'public',
         recipients: HANDLE,
         amount: String(numAmount),
-        note: 'Buy Zachary a coffee',
+        note: 'Tip for Zachary Walker',
       });
       return `https://venmo.com/?${params.toString()}`;
     }
@@ -93,8 +93,8 @@ export default function TipJar({ open, onClose }: Props) {
                   <Coffee size={16} className="text-accent" />
                 </div>
                 <div>
-                  <h3 id="tip-title" className="font-display text-xl text-text-main tracking-tight">Buy Me a Coffee</h3>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-text-muted/70 font-mono">Support the music</p>
+                  <h3 id="tip-title" className="font-display text-xl text-text-main tracking-tight">Support</h3>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-text-muted/70 font-mono">Leave a tip</p>
                 </div>
               </div>
               <button
@@ -117,8 +117,8 @@ export default function TipJar({ open, onClose }: Props) {
                   <HandHeart size={18} className="text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">Help a Father Fight for His Family</p>
-                  <p className="text-[11px] text-text-muted mt-1 leading-relaxed">Your support means the world. Every contribution makes a difference.</p>
+                  <p className="text-sm font-medium text-text-main group-hover:text-accent transition-colors">GoFundMe</p>
+                  <p className="text-[11px] text-text-muted mt-1 leading-relaxed">Support Zachary's personal fundraiser.</p>
                   <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] text-accent font-semibold mt-2">
                     GoFundMe <ExternalLink size={10} />
                   </span>
@@ -128,8 +128,7 @@ export default function TipJar({ open, onClose }: Props) {
               <div className="w-full h-px bg-white/5 mb-5" />
 
               <p className="text-text-muted text-xs mb-5 leading-relaxed">
-                Independent music is fueled by community. If something you heard moved you, a tip keeps the strings
-                fresh and the next song on its way.
+                Tips go directly toward gear, recordings, and keeping the music going.
               </p>
 
               <div className="mb-6">
@@ -203,7 +202,7 @@ export default function TipJar({ open, onClose }: Props) {
               </div>
 
               <p className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] text-text-muted/60 font-mono mt-6">
-                <Heart size={10} className="text-accent fill-accent" /> Thank you for listening
+                <Heart size={10} className="text-accent fill-accent" /> Thank you
               </p>
             </div>
           </motion.div>

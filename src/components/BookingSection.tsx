@@ -89,8 +89,7 @@ export default function BookingSection() {
       id="booking"
       className="bg-base py-32 text-text-main relative overflow-hidden border-t border-text-muted/10"
     >
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full filter blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 -left-32 w-[400px] h-[400px] bg-accent/[0.03] rounded-full filter blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-accent/[0.03] rounded-full filter blur-[140px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-6 lg:px-12 relative z-10">
         {/* Header */}
@@ -105,8 +104,7 @@ export default function BookingSection() {
           </h2>
           <div className="w-10 h-[1px] bg-accent/40" />
           <p className="text-text-muted text-base max-w-2xl">
-            Weddings, private parties, restaurant residencies, corporate events — share a few
-            details and you'll have a personal reply within 48 hours.
+            Weddings, private parties, restaurant residencies, corporate events — submit your details below and expect a response within 48 hours.
           </p>
         </div>
 
@@ -122,7 +120,7 @@ export default function BookingSection() {
                 <CheckCircle size={40} className="text-accent mx-auto mb-4" />
                 <h3 className="font-display text-2xl text-text-main mb-2">Inquiry received</h3>
                 <p className="text-text-muted text-sm max-w-md mx-auto">
-                  Thanks — your booking inquiry is in. Expect a personal reply within 48 hours.
+                  Your booking inquiry has been submitted. You will receive a response within 48 hours.
                 </p>
                 <button
                   onClick={() => setStatus('idle')}
@@ -226,7 +224,7 @@ export default function BookingSection() {
                     value={form.message}
                     onChange={(e) => update('message', e.target.value)}
                     className={`${inputCls} min-h-[120px] resize-y`}
-                    placeholder="Indoor or outdoor? Number of guests? The more I know, the better the set."
+                    placeholder="Indoor or outdoor, number of guests, any special requests."
                     required
                   />
                 </Field>
@@ -256,7 +254,7 @@ export default function BookingSection() {
                   <button
                     type="submit"
                     disabled={status === 'sending'}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-accent text-base px-8 py-4 font-semibold text-sm uppercase tracking-widest rounded-md hover:bg-accent/90 disabled:opacity-60 transition-colors"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-accent text-base px-8 py-4 font-semibold text-[13px] uppercase tracking-[0.15em] rounded-md hover:bg-accent/90 disabled:opacity-60 transition-colors"
                   >
                     {status === 'sending' ? (
                       <>
@@ -286,7 +284,7 @@ export default function BookingSection() {
               <p className="text-text-muted text-[11px] uppercase tracking-[0.18em] font-mono mb-5">Base package</p>
               <ul className="space-y-3 text-sm text-text-muted">
                 <Bullet>Solo acoustic performance — vocals + guitar</Bullet>
-                <Bullet>Curated mix of originals, covers, and live requests</Bullet>
+                <Bullet>Originals, covers, and live requests</Bullet>
                 <Bullet>Self-contained PA suitable for &lt; 150 guests</Bullet>
                 <Bullet>Pre-event setlist consult by email</Bullet>
                 <Bullet>Liability-insurance documentation on request</Bullet>
@@ -306,9 +304,9 @@ export default function BookingSection() {
             </div>
 
             <div className="bg-accent/5 border border-accent/30 rounded-2xl p-6">
-              <p className="text-text-main text-sm font-medium mb-1">Got a quick question?</p>
+              <p className="text-text-main text-sm font-medium mb-1">Questions?</p>
               <p className="text-text-muted text-xs leading-relaxed mb-4">
-                Not ready to fill out the full form? Email and I'll reply personally.
+                Reach out directly for general inquiries.
               </p>
               <a
                 href="mailto:mgmt@zacharywalkermusic.com"
