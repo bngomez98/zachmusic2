@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { SHOWS } from '../data';
 
@@ -42,10 +43,7 @@ export default function ShowsSection() {
           {upcoming.length === 0 && (
             <div className="py-16 text-center text-text-muted text-sm">
               No upcoming shows scheduled — check back soon or{' '}
-              <a href="#booking" className="text-accent hover:underline">
-                book a private event
-              </a>
-              .
+              <Link to="/booking" className="text-accent hover:underline">book a private event</Link>.
             </div>
           )}
           {upcoming.map((show, i) => (
@@ -139,12 +137,12 @@ export default function ShowsSection() {
         </div>
 
         <div className="text-center pt-8">
-          <a
-            href="#booking"
+          <Link
+            to="/booking"
             className="inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-accent font-semibold hover:gap-3 transition-all duration-300"
           >
             Want to book? Get in touch →
-          </a>
+          </Link>
         </div>
       </div>
     </section>

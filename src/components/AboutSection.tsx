@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Instagram, Youtube, Link as LinkIcon, Music, MapPin, Calendar, Mic } from 'lucide-react';
 import { LINKS } from '../data';
@@ -89,12 +90,12 @@ export default function AboutSection() {
                 <LinkIcon size={16} />
                 Facebook
               </a>
-              <a
-                href="#booking"
+              <Link
+                to="/booking"
                 className="sm:ml-auto inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-accent font-semibold hover:gap-3 transition-all duration-300"
               >
                 Book a Show →
-              </a>
+              </Link>
             </div>
           </div>
 

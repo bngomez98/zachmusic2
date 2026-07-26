@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, X, Music, Calendar, Mail, BookOpen, Heart } from 'lucide-react';
 import { SHOWS, RELEASES } from '../data';
@@ -24,21 +25,22 @@ export default function SearchModal({ open, onClose, onOpenLegal, onOpenTip }: P
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const index: SearchItem[] = useMemo(() => {
     const items: SearchItem[] = [
-      { id: 'about', title: 'About the Artist', subtitle: 'Bio & background', anchor: '#about', type: 'page', icon: <BookOpen size={16} /> },
-      { id: 'music', title: 'Music & Discography', subtitle: 'Originals and releases', anchor: '#music', type: 'page', icon: <Music size={16} /> },
-      { id: 'shows', title: 'Upcoming Shows', subtitle: 'Live performances', anchor: '#shows', type: 'page', icon: <Calendar size={16} /> },
-{ id: 'booking', title: 'Book a Show', subtitle: 'Hire for your event', anchor: '#booking', type: 'page', icon: <Calendar size={16} /> },
-      { id: 'contact', title: 'Contact & Newsletter', subtitle: 'Get in touch', anchor: '#contact', type: 'page', icon: <Mail size={16} /> },
+      { id: 'home', title: 'Home', subtitle: 'Main page', anchor: '/', type: 'page', icon: <BookOpen size={16} /> },
+      { id: 'music', title: 'Music & Discography', subtitle: 'Originals and releases', anchor: '/music', type: 'page', icon: <Music size={16} /> },
+      { id: 'shows', title: 'Upcoming Shows', subtitle: 'Live performances', anchor: '/shows', type: 'page', icon: <Calendar size={16} /> },
+      { id: 'booking', title: 'Book a Show', subtitle: 'Hire for your event', anchor: '/booking', type: 'page', icon: <Calendar size={16} /> },
+      { id: 'contact', title: 'Contact & Newsletter', subtitle: 'Get in touch', anchor: '/contact', type: 'page', icon: <Mail size={16} /> },
     ];
     SHOWS.forEach((s) => items.push({
       id: `show-${s.id}`,
       title: s.title,
       subtitle: `${s.date} · ${s.location}`,
       body: s.amenities,
-      anchor: '#shows',
+      anchor: '/shows',
       type: 'show',
       icon: <Calendar size={16} />,
     }));
@@ -47,7 +49,7 @@ export default function SearchModal({ open, onClose, onOpenLegal, onOpenTip }: P
       title: r.title,
       subtitle: r.subtitle,
       body: r.description,
-      anchor: '#music',
+      anchor: '/music',
       type: 'release',
       icon: <Music size={16} />,
     }));
@@ -112,8 +114,7 @@ export default function SearchModal({ open, onClose, onOpenLegal, onOpenTip }: P
       if (action === 'tip') onOpenTip?.();
       else onOpenLegal?.(action as 'privacy' | 'terms' | 'copyright' | 'cookies');
     } else {
-      const el = document.querySelector(item.anchor);
-      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      navigate(item.anchor);
     }
     onClose();
   };

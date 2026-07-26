@@ -1,5 +1,6 @@
 import { Instagram, Facebook, Youtube, Menu, X, Search, Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { LINKS } from '../data';
 
@@ -29,30 +30,30 @@ export default function Nav({ onOpenSearch, onOpenTip }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onOpenSearch]);
 
+  const location = useLocation();
   const navLinks = [
-    { name: 'ABOUT', href: '#about' },
-    { name: 'MUSIC', href: '#music' },
-    { name: 'SHOWS', href: '#shows' },
-    { name: 'BOOK', href: '#booking' },
-    { name: 'CONTACT', href: '#contact' },
+    { name: 'MUSIC', href: '/music' },
+    { name: 'SHOWS', href: '/shows' },
+    { name: 'BOOK', href: '/booking' },
+    { name: 'CONTACT', href: '/contact' },
   ];
 
   return (
     <>
       <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-base/90 backdrop-blur-md py-4 border-b border-text-muted/10' : 'bg-transparent py-6 border-b border-transparent'}`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex justify-between items-center">
-          <a href="#" className="flex items-center gap-3 group z-50">
+          <Link to="/" className="flex items-center gap-3 group z-50">
             <div className="w-8 h-8 flex items-center justify-center border border-accent/40 rounded-full group-hover:border-accent group-hover:bg-accent/10 transition-all duration-300">
               <span className="font-display text-accent text-[17px] leading-none mt-[2px] ml-[1px]">Z</span>
             </div>
             <span className="text-[17px] font-display font-medium tracking-[0.18em] text-text-main group-hover:text-accent transition-colors uppercase mt-1 hidden sm:block">Zachary Walker</span>
-          </a>
+          </Link>
 
           <div className="hidden md:flex gap-6 items-center">
             {navLinks.map(link => (
-              <a key={link.name} href={link.href} className="text-xs font-medium tracking-[0.2em] text-text-muted hover:text-accent transition-colors">
+              <Link key={link.name} to={link.href} className={`text-xs font-medium tracking-[0.2em] transition-colors ${location.pathname === link.href ? 'text-accent' : 'text-text-muted hover:text-accent'}`}>
                 {link.name}
-              </a>
+              </Link>
             ))}
             <button
               onClick={onOpenTip}
@@ -105,9 +106,9 @@ export default function Nav({ onOpenSearch, onOpenTip }: Props) {
             </button>
             <div className="flex flex-col items-center gap-8 w-full">
               {navLinks.map(link => (
-                <a key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-3xl font-display font-medium tracking-widest text-text-main hover:text-accent transition-colors">
+                <Link key={link.name} to={link.href} onClick={() => setIsOpen(false)} className={`text-3xl font-display font-medium tracking-widest transition-colors ${location.pathname === link.href ? 'text-accent' : 'text-text-main hover:text-accent'}`}>
                   {link.name}
-                </a>
+                </Link>
               ))}
               <button
                 onClick={() => { setIsOpen(false); onOpenTip(); }}
