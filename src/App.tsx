@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Nav from '@/components/Nav';
-import Hero from '@/components/Hero';
-import AboutSection from '@/components/AboutSection';
-import MusicSection from '@/components/MusicSection';
-import ShowsSection from '@/components/ShowsSection';
-import BookingSection from '@/components/BookingSection';
 import Footer from '@/components/Footer';
 import CookieConsent from '@/components/CookieConsent';
 import LegalModal, { type LegalDoc } from '@/components/LegalModal';
 import TipJar from '@/components/TipJar';
 import SearchModal from '@/components/SearchModal';
-import Newsletter from '@/components/Newsletter';
 import StickyBookingCTA from '@/components/StickyBookingCTA';
 import AudioPlayer from '@/components/AudioPlayer';
+import ScrollToTop from '@/components/ScrollToTop';
+import HomePage from '@/pages/HomePage';
+import MusicPage from '@/pages/MusicPage';
+import ShowsPage from '@/pages/ShowsPage';
+import BookingPage from '@/pages/BookingPage';
+import ContactPage from '@/pages/ContactPage';
 
 export default function App() {
   const [legalDoc, setLegalDoc] = useState<LegalDoc>(null);
@@ -23,18 +24,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-base text-text-main">
+      <ScrollToTop />
       <Nav
         onOpenSearch={() => setSearchOpen(true)}
         onOpenTip={() => setTipOpen(true)}
       />
 
       <main>
-        <Hero />
-        <Newsletter />
-        <AboutSection />
-        <MusicSection />
-        <ShowsSection />
-        <BookingSection />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/music" element={<MusicPage />} />
+          <Route path="/shows" element={<ShowsPage />} />
+          <Route path="/booking" element={<BookingPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Routes>
       </main>
 
       <Footer

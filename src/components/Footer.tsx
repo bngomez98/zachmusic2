@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Youtube, Mail, ArrowRight, Copyright, Heart } from 'lucide-react';
 import { LINKS } from '../data';
 import { subscribeNewsletter, isEmail } from '../lib/supabase';
@@ -142,7 +143,7 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
             <button onClick={() => onOpenLegal('cookies')} className="hover:text-accent transition-colors tracking-widest">Cookies</button>
             <button onClick={onOpenConsent} className="hover:text-accent transition-colors tracking-widest">Preferences</button>
             <button onClick={onOpenTip} className="hover:text-accent transition-colors tracking-widest inline-flex items-center gap-1"><Heart size={10} className="text-accent/70" />Support</button>
-            <a href="mailto:mgmt@zacharywalkermusic.com" className="hover:text-accent transition-colors tracking-widest">Contact</a>
+            <Link to="/contact" className="hover:text-accent transition-colors tracking-widest">Contact</Link>
           </div>
           <div className="flex gap-6">
             <a href={LINKS.instagram} target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-accent transition-colors">

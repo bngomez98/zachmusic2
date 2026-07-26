@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { Play, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 
@@ -62,13 +63,13 @@ export default function Hero() {
               <span className="w-8 h-[1px] bg-accent/60" />
               Singer-Songwriter — Topeka, KS
             </span>
-            <a
-              href="#booking"
+            <Link
+              to="/booking"
               className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.2em] uppercase text-accent bg-accent/10 border border-accent/40 rounded-full px-3 py-1.5 hover:bg-accent hover:text-base transition-all"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
               Booking 2026 — Open
-            </a>
+            </Link>
           </div>
         </motion.div>
 
@@ -104,13 +105,13 @@ export default function Hero() {
             transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
             className="mt-8 flex flex-wrap items-center gap-3"
           >
-            <a
-              href="#booking"
+            <Link
+              to="/booking"
               className="group inline-flex items-center justify-center gap-2 bg-accent text-base px-8 py-4 font-semibold text-[14px] tracking-[0.18em] uppercase hover:bg-accent/90 transition-all duration-300 shadow-[0_10px_40px_rgba(212,168,83,0.25)]"
             >
               Book a Show
               <span className="transition-transform group-hover:translate-x-1">→</span>
-            </a>
+            </Link>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('zw:open-player', { detail: { src: '/loveandmadness.mp3' } }))}
               className="group inline-flex items-center justify-center gap-2 border border-text-main/20 hover:border-accent text-text-main px-8 py-4 font-normal text-[14px] hover:bg-accent transition-all duration-300"

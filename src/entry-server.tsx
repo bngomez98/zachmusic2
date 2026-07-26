@@ -1,13 +1,14 @@
-// Prerender entry. Executed at build time by scripts/prerender.js, never at runtime.
-
 import { StrictMode } from 'react';
 import { renderToString } from 'react-dom/server';
+import { StaticRouter } from 'react-router';
 import App from './App';
 
-export function render(): string {
+export function render(url = '/'): string {
   return renderToString(
     <StrictMode>
-      <App />
+      <StaticRouter location={url}>
+        <App />
+      </StaticRouter>
     </StrictMode>,
   );
 }
