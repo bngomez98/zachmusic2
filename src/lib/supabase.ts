@@ -39,15 +39,34 @@ async function apiPost(path: string, body: Record<string, unknown>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+
   if (!res.ok) {
     let errMsg = 'Submission failed. Please try again.';
     try {
       const data = await res.json();
-      if (data?.error) errMsg = data.error;
-    } catch {}
+      if (data?.error && typeof data.error === 'string') errMsg = data.error;
+    } catch {
+      // non-JSON response — keep the generic message
+    }
+
+    // Give operators a clearer signal for the most common misconfig.
+    if (res.status === 503) {
+      errMsg =
+        dataErrorOr(errMsg) ||
+        'Newsletter is temporarily unavailable. Please try again later or email mgmt@zacharywalkermusic.com.';
+    }
+
     throw new Error(errMsg);
   }
+
   return res.json();
+}
+
+function dataErrorOr(fallback: string): string | null {
+  // Helper kept simple — the real message is already extracted above.
+  return fallback.includes('not fully configured') || fallback.includes('temporarily unavailable')
+    ? fallback
+    : null;
 }
 
 export async function subscribeNewsletter({ name, email, source = 'web' }: SubscribeArgs) {
