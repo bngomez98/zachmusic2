@@ -60,7 +60,10 @@ function requireSupabase(_req: Request, res: Response, next: NextFunction) {
   if (!supabaseConfigured()) {
     return res
       .status(503)
-      .json({ error: 'Server not configured — SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing' });
+      .json({
+        error:
+          'Newsletter is temporarily unavailable (server not fully configured). Please try again later or email mgmt@zacharywalkermusic.com.',
+      });
   }
   next();
 }
@@ -96,18 +99,54 @@ export function createApiRouter(): Router {
       const { ip, userAgent } = requestMeta(req);
 
       try {
-        const result = await supabaseInsert(
+        // Preferred path: ON CONFLICT DO NOTHING + return representation.
+        // Empty rows = already subscribed. This requires a unique index on the
+        // bare email column (see db/schema.sql).
+        let result = await supabaseInsert(
           'subscribers',
           { name, email, source, ip, user_agent: userAgent },
           { onConflict: 'email', ignoreDuplicates: true, returning: 'representation' },
         );
 
+        // Fallback when the unique-index / on_conflict path is misconfigured
+        // (PostgREST 42P10 or similar). Check existence then insert without
+        // on_conflict so the form still works.
         if (!result.ok) {
-          console.error('[subscribe] supabase insert failed:', result.status, result.detail);
-          return res.status(502).json({ error: 'Failed to subscribe' });
+          console.error('[subscribe] primary insert failed:', result.status, result.detail);
+
+          const already = await subscriberExists(email).catch((err) => {
+            console.error('[subscribe] existence check failed:', err);
+            return null;
+          });
+
+          if (already === true) {
+            return res.status(200).json({ message: 'Already subscribed' });
+          }
+          if (already === null) {
+            // Could not talk to Supabase at all.
+            return res.status(502).json({
+              error:
+                'Unable to reach the subscription service. Please try again shortly or email mgmt@zacharywalkermusic.com.',
+            });
+          }
+
+          // Not present — try a plain insert.
+          result = await supabaseInsert(
+            'subscribers',
+            { name, email, source, ip, user_agent: userAgent },
+            { returning: 'representation' },
+          );
+
+          if (!result.ok) {
+            console.error('[subscribe] fallback insert failed:', result.status, result.detail);
+            return res.status(502).json({
+              error:
+                'Failed to subscribe. Please try again or email mgmt@zacharywalkermusic.com.',
+            });
+          }
         }
 
-        // ignore-duplicates returns no rows when the address was already present.
+        // ignore-duplicates (or fallback that found an existing row) returns no rows.
         if (result.rows.length === 0) {
           return res.status(200).json({ message: 'Already subscribed' });
         }
@@ -120,7 +159,10 @@ export function createApiRouter(): Router {
         return res.status(201).json({ message: 'Successfully subscribed' });
       } catch (err) {
         console.error('[subscribe] error:', err);
-        return res.status(500).json({ error: 'Failed to subscribe' });
+        return res.status(500).json({
+          error:
+            'Failed to subscribe. Please try again or email mgmt@zacharywalkermusic.com.',
+        });
       }
     },
   );
@@ -298,6 +340,10 @@ export function createApiRouter(): Router {
     res.status(checks.supabase ? 200 : 503).json({
       ok: checks.supabase,
       checks,
+      // Helpful for operators without leaking secrets.
+      hint: checks.supabase
+        ? 'Supabase is configured. Newsletter should accept signups.'
+        : 'Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on the host.',
       time: new Date().toISOString(),
     });
   });
