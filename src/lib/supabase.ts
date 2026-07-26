@@ -2,8 +2,6 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 export const isEmail = (v: unknown): v is string =>
   typeof v === 'string' && EMAIL_RE.test(v.trim());
 
-export const isSupabaseConfigured = (): boolean => true;
-
 export interface SubscribeArgs {
   name?: string;
   email: string;

@@ -13,7 +13,7 @@ import {
   Clock,
   Shield,
 } from 'lucide-react';
-import { isEmail } from '../lib/supabase';
+import { submitBooking as apiSubmitBooking } from '../lib/supabase';
 
 interface FormState {
   name: string;
@@ -62,47 +62,25 @@ export default function BookingSection() {
     setForm((f) => ({ ...f, [k]: v }));
   };
 
-  const validate = (): string | null => {
-    if (!form.name.trim()) return 'Please enter your name.';
-    if (!isEmail(form.email)) return 'Please enter a valid email.';
-    if (!form.eventDate) return 'Please select a tentative event date.';
-    if (!form.message.trim()) return 'Please include a brief message about your event.';
-    if (!form.consent) return 'Please agree to the privacy policy to continue.';
-    return null;
-  };
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const err = validate();
-    if (err) {
-      setErrMsg(err);
+    if (!form.consent) {
+      setErrMsg('Please agree to the privacy policy to continue.');
       setStatus('error');
       return;
     }
     setStatus('sending');
     setErrMsg('');
     try {
-      const resp = await fetch('/api/booking', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (resp.ok || resp.status === 201) {
-        // fire conversion
-        if (typeof (window as any).gtag === 'function') {
-          (window as any).gtag('event', 'ads_conversion_Contact_Us_1');
-        }
-        setStatus('success');
-        setForm(INITIAL);
-        return;
+      await apiSubmitBooking(form);
+      if (typeof (window as any).gtag === 'function') {
+        (window as any).gtag('event', 'ads_conversion_Contact_Us_1');
       }
-      throw new Error(data?.error || 'Submission failed. Please try again.');
-    } catch (e) {
+      setStatus('success');
+      setForm(INITIAL);
+    } catch (err) {
       setStatus('error');
-      setErrMsg(
-        e instanceof Error ? e.message : 'Submission failed. Please try again.',
-      );
+      setErrMsg(err instanceof Error ? err.message : 'Submission failed. Please try again.');
     }
   };
 

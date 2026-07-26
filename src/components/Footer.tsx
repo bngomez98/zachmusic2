@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Instagram, Facebook, Mail, ArrowRight, Copyright, Heart } from 'lucide-react';
+import { Instagram, Facebook, Youtube, Mail, ArrowRight, Copyright, Heart } from 'lucide-react';
 import { LINKS } from '../data';
+import { subscribeNewsletter, isEmail } from '../lib/supabase';
 import { LegalDoc } from './LegalModal';
 
 interface Props {
@@ -17,32 +18,21 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!isEmail(email)) return;
     setStatus('loading');
     setErrMsg('');
 
     try {
-      const resp = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() || undefined, email: email.trim(), source: 'footer' }),
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (resp.ok || resp.status === 200 || resp.status === 201) {
-        setStatus('success');
-        // fire gtag
-        if (typeof (window as any).gtag === 'function') {
-          (window as any).gtag('event', 'newsletter_signup', { source: 'footer' });
-        }
-        setName('');
-        setEmail('');
-        return;
+      const result = await subscribeNewsletter({ name: name.trim() || undefined, email, source: 'footer' });
+      setStatus('success');
+      if (!result.alreadySubscribed && typeof (window as any).gtag === 'function') {
+        (window as any).gtag('event', 'newsletter_signup', { source: 'footer' });
       }
-      throw new Error(data?.error || data?.message || 'Submission failed. Please try again.');
+      setName('');
+      setEmail('');
     } catch (err) {
       setStatus('error');
-      const msg = err instanceof Error ? err.message : 'Submission failed. Please try again.';
-      setErrMsg(msg);
+      setErrMsg(err instanceof Error ? err.message : 'Submission failed. Please try again.');
     }
   };
 
@@ -68,6 +58,12 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
               </a>
               <a href={LINKS.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
                 <Facebook size={20} />
+              </a>
+              <a href={LINKS.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
+                <Youtube size={20} />
+              </a>
+              <a href={LINKS.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="text-text-muted hover:text-accent transition-colors p-2 border border-white/5 rounded-full hover:border-accent/30 bg-surface/50">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" /></svg>
               </a>
             </div>
           </div>
@@ -154,6 +150,9 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
             </a>
             <a href={LINKS.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-accent transition-colors">
               <Facebook size={18} />
+            </a>
+            <a href={LINKS.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-accent transition-colors">
+              <Youtube size={18} />
             </a>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { Instagram, Facebook, Menu, X, Search, Heart } from 'lucide-react';
+import { Instagram, Facebook, Youtube, Menu, X, Search, Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LINKS } from '../data';
@@ -30,6 +30,7 @@ export default function Nav({ onOpenSearch, onOpenTip }: Props) {
   }, [onOpenSearch]);
 
   const navLinks = [
+    { name: 'ABOUT', href: '#about' },
     { name: 'MUSIC', href: '#music' },
     { name: 'SHOWS', href: '#shows' },
     { name: 'BOOK', href: '#booking' },
@@ -75,6 +76,9 @@ export default function Nav({ onOpenSearch, onOpenTip }: Props) {
             <a href={LINKS.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="text-text-muted hover:text-accent transition-colors">
               <Facebook size={18} />
             </a>
+            <a href={LINKS.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="text-text-muted hover:text-accent transition-colors">
+              <Youtube size={18} />
+            </a>
           </div>
 
           <div className="md:hidden flex items-center gap-2">
@@ -119,6 +123,9 @@ export default function Nav({ onOpenSearch, onOpenTip }: Props) {
                 </a>
                 <a href={LINKS.facebook} target="_blank" rel="noreferrer" aria-label="Facebook" className="text-text-muted hover:text-accent transition-colors">
                   <Facebook size={28} />
+                </a>
+                <a href={LINKS.youtube} target="_blank" rel="noreferrer" aria-label="YouTube" className="text-text-muted hover:text-accent transition-colors">
+                  <Youtube size={28} />
                 </a>
               </div>
             </div>
