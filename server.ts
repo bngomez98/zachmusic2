@@ -15,7 +15,10 @@ if (process.env.NODE_ENV === 'development') {
   dotenv.config({ path: '.env.development.local' });
   dotenv.config({ path: '.env', override: false });
 } else {
-  dotenv.config();
+  // Host dashboard env wins. Fall back to committed env.production for values
+  // not already set (e.g. GMAIL_APP_PASSWORD when the operator chose to ship it).
+  dotenv.config({ path: 'env.production', override: false });
+  dotenv.config({ path: '.env', override: false });
 }
 
 const PORT = Number(process.env.PORT) || 3000;
