@@ -31,6 +31,13 @@ const distDir = process.env.DIST_DIR
   ? path.resolve(process.env.DIST_DIR)
   : path.resolve(process.cwd(), 'dist');
 
+const ALLOWED_ORIGINS = [
+  'https://zacharywalkermusic.com',
+  'https://www.zacharywalkermusic.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
+
 async function startServer() {
   const app = express();
 
@@ -41,10 +48,46 @@ async function startServer() {
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader(
+      'Permissions-Policy',
+      'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+    );
+    // Light baseline CSP. AdSense / GTM / fonts need the listed hosts.
+    // Keep this intentionally permissive so third-party tags continue to work.
+    res.setHeader(
+      'Content-Security-Policy',
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com https://www.googleadservices.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com data:",
+        "img-src 'self' data: https: blob:",
+        "media-src 'self' blob:",
+        "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://pagead2.googlesyndication.com",
+        "frame-src 'self' https://www.googletagmanager.com https://googleads.g.doubleclick.net",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ].join('; '),
+    );
     next();
   });
 
-  app.use(cors());
+  app.use(
+    cors({
+      origin: (origin, cb) => {
+        // Allow non-browser requests (no Origin header) and the known origins.
+        if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+          return cb(null, true);
+        }
+        return cb(null, false);
+      },
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }),
+  );
+
   app.use(createApiRouter());
 
   // Anything still unmatched under /api is a genuine 404, not the SPA shell.
