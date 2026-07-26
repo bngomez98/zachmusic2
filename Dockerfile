@@ -27,9 +27,10 @@ ENV PORT=3000
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-# Only the build outputs; source and build tooling stay behind.
+# Only the build outputs + env.production; source and build tooling stay behind.
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/dist-server ./dist-server
+COPY --from=build /app/env.production ./env.production
 
 # Drop root.
 USER node
