@@ -7,7 +7,10 @@ FROM node:22-slim AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# Explicit --include=dev so the build still gets its tooling if NODE_ENV is
+# ever set to production in the build environment; npm omits devDependencies
+# when it sees that.
+RUN npm ci --include=dev
 
 COPY . .
 # Builds the client, the SSR bundle, injects prerendered HTML, then bundles the server.

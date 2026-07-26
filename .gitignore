@@ -1,27 +1,28 @@
-# Local env (never commit real local .env)
-.env
-.env.local
-.env.*.local
-env.*.local
-
-# Note: env.production is intentionally committed with production config (including keys) per user request.
-
-# Standard ignores
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
+dist-server/
 dist-ssr/
-*.local
-*.log
+.prerender/
+build/
+*.tsbuildinfo
+
+# Environment — secrets live in hosting dashboards, not the repo.
+# env.production is intentionally committed (public-facing keys only).
+.env
+.env.*
+!.env.example
+
+# OS / editor
 .DS_Store
+Thumbs.db
 .idea/
 .vscode/
 *.swp
 *.swo
-.env.production.bak
-.vercel/
+*.log
 
-# Build
-build/
-*.tsbuildinfo
-dist-server/
-.prerender/
+# Hosting / platform
+.vercel/
