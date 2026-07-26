@@ -2,21 +2,24 @@ import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { SHOWS } from '../data';
 
-function parseShowDate(dateStr: string): Date {
-  const [mon, day] = dateStr.split(' ');
-  const months: Record<string, number> = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
-  const year = new Date().getFullYear();
-  return new Date(year, months[mon] ?? 0, parseInt(day, 10));
-}
-
 export default function ShowsSection() {
   const { upcoming, past } = useMemo(() => {
     const now = new Date();
+    // Compare at start-of-day local so a show on the current day still counts as upcoming.
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
     const u: typeof SHOWS = [];
     const p: typeof SHOWS = [];
+
     for (const s of SHOWS) {
-      (parseShowDate(s.date) > now ? u : p).push(s);
+      const showDate = new Date(s.dateISO + 'T00:00:00');
+      (showDate >= today ? u : p).push(s);
     }
+
+    // Upcoming sorted soonest first; past newest first.
+    u.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
+    p.sort((a, b) => b.dateISO.localeCompare(a.dateISO));
+
     return { upcoming: u, past: p };
   }, []);
 
@@ -39,7 +42,10 @@ export default function ShowsSection() {
           {upcoming.length === 0 && (
             <div className="py-16 text-center text-text-muted text-sm">
               No upcoming shows scheduled — check back soon or{' '}
-              <a href="#booking" className="text-accent hover:underline">book a private event</a>.
+              <a href="#booking" className="text-accent hover:underline">
+                book a private event
+              </a>
+              .
             </div>
           )}
           {upcoming.map((show, i) => (
@@ -55,11 +61,17 @@ export default function ShowsSection() {
               <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-accent scale-y-0 group-hover:scale-y-100 transition-transform origin-center duration-500 ease-out" />
               <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-16 w-full md:w-2/3 relative z-10">
                 <div className="flex md:flex-col items-baseline md:items-center gap-3 md:gap-0 min-w-[100px]">
-                  <span className="text-accent font-light tracking-[0.2em] uppercase text-xs sm:text-sm">{show.date.split(' ')[0]}</span>
-                  <span className="text-text-main font-display font-medium text-4xl sm:text-5xl tracking-tighter group-hover:text-accent transition-colors duration-500">{show.date.split(' ')[1]}</span>
+                  <span className="text-accent font-light tracking-[0.2em] uppercase text-xs sm:text-sm">
+                    {show.date.split(' ')[0]}
+                  </span>
+                  <span className="text-text-main font-display font-medium text-4xl sm:text-5xl tracking-tighter group-hover:text-accent transition-colors duration-500">
+                    {show.date.split(' ')[1]}
+                  </span>
                 </div>
                 <div>
-                  <h3 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight mb-3 text-text-main group-hover:text-white transition-colors">{show.title}</h3>
+                  <h3 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight mb-3 text-text-main group-hover:text-white transition-colors">
+                    {show.title}
+                  </h3>
                   <div className="text-text-muted text-sm tracking-wide font-light flex items-center gap-2 mb-2">
                     <span className="w-4 h-[1px] bg-text-muted/40 inline-block"></span>
                     {show.location}
@@ -108,8 +120,12 @@ export default function ShowsSection() {
                 >
                   <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-12">
                     <div className="flex md:flex-col items-baseline md:items-center gap-3 md:gap-0 min-w-[100px]">
-                      <span className="text-text-muted/60 font-light tracking-[0.2em] uppercase text-xs">{show.date.split(' ')[0]}</span>
-                      <span className="text-text-muted font-display font-medium text-3xl tracking-tighter">{show.date.split(' ')[1]}</span>
+                      <span className="text-text-muted/60 font-light tracking-[0.2em] uppercase text-xs">
+                        {show.date.split(' ')[0]}
+                      </span>
+                      <span className="text-text-muted font-display font-medium text-3xl tracking-tighter">
+                        {show.date.split(' ')[1]}
+                      </span>
                     </div>
                     <div>
                       <h3 className="text-xl font-display tracking-tight text-text-muted">{show.title}</h3>
