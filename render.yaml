@@ -12,7 +12,11 @@ services:
     region: ohio
     branch: main
 
-    buildCommand: npm ci && npm run build
+    # --include=dev is required: NODE_ENV=production is set below, and npm omits
+    # devDependencies when it sees that. The build tooling (Vite, esbuild,
+    # TypeScript) lives in devDependencies, so a bare `npm ci` here installs
+    # none of it and the build fails.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
 
     healthCheckPath: /healthz
