@@ -1,0 +1,41 @@
+# Render blueprint for the persistent server.
+#
+# Deploy: Render Dashboard -> New -> Blueprint -> point at this repo.
+# Secrets are marked sync:false so they are never committed here; set their
+# values once in the Render dashboard.
+
+services:
+  - type: web
+    name: zacharywalkermusic
+    runtime: node
+    plan: starter # Free instances sleep when idle, which defeats the point of a persistent server.
+    region: ohio
+    branch: main
+
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+
+    healthCheckPath: /healthz
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+
+      # Database (Supabase REST). Required — the API returns 503 without these.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+      # Outbound email over Gmail SMTP. Optional: signup still records without
+      # them, the welcome email is just skipped.
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+
+      # Bearer token guarding POST /api/welcome-email.
+      - key: ADMIN_SECRET
+        sync: false
