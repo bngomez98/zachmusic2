@@ -6,6 +6,7 @@ import { env, esc } from './lib.js';
 
 const SITE_URL = 'https://zacharywalkermusic.com';
 const ACCENT = '#D4A853';
+const INSTAGRAM = 'https://www.instagram.com/za.chary5068/';
 
 /** Returns null when SMTP credentials are absent, so callers can skip sending. */
 export function createMailer(): Transporter | null {
@@ -47,7 +48,7 @@ export function buildWelcomeHtml(displayName: string): string {
       <a href="${SITE_URL}/#shows" style="display:inline-block;background-color:${ACCENT};color:#0A0A0A;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;text-decoration:none;padding:12px 24px;border-radius:4px">Upcoming Shows</a>
     </td>
     <td align="center">
-      <a href="https://instagram.com/zacharywalkermusic" style="display:inline-block;background-color:transparent;color:${ACCENT};font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;text-decoration:none;padding:12px 24px;border-radius:4px;border:1px solid ${ACCENT}">Instagram</a>
+      <a href="${INSTAGRAM}" style="display:inline-block;background-color:transparent;color:${ACCENT};font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;text-decoration:none;padding:12px 24px;border-radius:4px;border:1px solid ${ACCENT}">Instagram</a>
     </td>
   </tr>
   </table>
