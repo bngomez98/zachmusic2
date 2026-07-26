@@ -11,6 +11,7 @@ import {
   requestMeta,
   supabaseConfigured,
   supabaseInsert,
+  subscribeInsert,
   subscriberExists,
 } from './lib.js';
 import { sendWelcomeEmail, sendBookingEmails, buildWelcomeHtml, createMailer } from './email.js';
@@ -99,55 +100,25 @@ export function createApiRouter(): Router {
       const { ip, userAgent } = requestMeta(req);
 
       try {
-        // Preferred path: ON CONFLICT DO NOTHING + return representation.
-        // Empty rows = already subscribed. This requires a unique index on the
-        // bare email column (see db/schema.sql).
-        let result = await supabaseInsert(
-          'subscribers',
-          { name, email, source, ip, user_agent: userAgent },
-          { onConflict: 'email', ignoreDuplicates: true, returning: 'representation' },
-        );
+        // Works with anon key (insert-only RLS) or service role.
+        // Duplicates are detected via unique constraint (409 / 23505), not SELECT.
+        const result = await subscribeInsert({
+          name,
+          email,
+          source,
+          ip,
+          user_agent: userAgent,
+        });
 
-        // Fallback when the unique-index / on_conflict path is misconfigured
-        // (PostgREST 42P10 or similar). Check existence then insert without
-        // on_conflict so the form still works.
         if (!result.ok) {
-          console.error('[subscribe] primary insert failed:', result.status, result.detail);
-
-          const already = await subscriberExists(email).catch((err) => {
-            console.error('[subscribe] existence check failed:', err);
-            return null;
+          console.error('[subscribe] insert failed:', result.status, result.detail);
+          return res.status(502).json({
+            error:
+              'Failed to subscribe. Please try again or email mgmt@zacharywalkermusic.com.',
           });
-
-          if (already === true) {
-            return res.status(200).json({ message: 'Already subscribed' });
-          }
-          if (already === null) {
-            // Could not talk to Supabase at all.
-            return res.status(502).json({
-              error:
-                'Unable to reach the subscription service. Please try again shortly or email mgmt@zacharywalkermusic.com.',
-            });
-          }
-
-          // Not present — try a plain insert.
-          result = await supabaseInsert(
-            'subscribers',
-            { name, email, source, ip, user_agent: userAgent },
-            { returning: 'representation' },
-          );
-
-          if (!result.ok) {
-            console.error('[subscribe] fallback insert failed:', result.status, result.detail);
-            return res.status(502).json({
-              error:
-                'Failed to subscribe. Please try again or email mgmt@zacharywalkermusic.com.',
-            });
-          }
         }
 
-        // ignore-duplicates (or fallback that found an existing row) returns no rows.
-        if (result.rows.length === 0) {
+        if (!result.created) {
           return res.status(200).json({ message: 'Already subscribed' });
         }
 
@@ -311,7 +282,8 @@ export function createApiRouter(): Router {
       if (!mailer) return res.status(503).json({ error: 'Email not configured' });
 
       try {
-        if (!(await subscriberExists(email))) {
+        // subscriberExists requires service role; without it we still attempt send.
+        if (env.hasServiceRole() && !(await subscriberExists(email))) {
           return res.status(404).json({ error: 'Email not found in subscriber list' });
         }
 
@@ -335,15 +307,17 @@ export function createApiRouter(): Router {
   router.get('/healthz', async (_req, res) => {
     const checks = {
       supabase: supabaseConfigured(),
+      serviceRole: env.hasServiceRole(),
       email: Boolean(env.gmailUser() && env.gmailPassword()),
     };
     res.status(checks.supabase ? 200 : 503).json({
       ok: checks.supabase,
       checks,
-      // Helpful for operators without leaking secrets.
       hint: checks.supabase
-        ? 'Supabase is configured. Newsletter should accept signups.'
-        : 'Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on the host.',
+        ? checks.serviceRole
+          ? 'Supabase service role active. Full admin + newsletter paths available.'
+          : 'Supabase anon key active. Newsletter inserts work; set SUPABASE_SERVICE_ROLE_KEY for admin reads.'
+        : 'Supabase URL/key missing.',
       time: new Date().toISOString(),
     });
   });
