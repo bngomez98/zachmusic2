@@ -6,7 +6,7 @@ function parseShowDate(dateStr: string): Date {
   const [mon, day] = dateStr.split(' ');
   const months: Record<string, number> = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
   const year = new Date().getFullYear();
-  return new Date(year, months[mon] ?? 0, parseInt(day, 10) + 1);
+  return new Date(year, months[mon] ?? 0, parseInt(day, 10));
 }
 
 export default function ShowsSection() {

@@ -12,6 +12,7 @@ import TipJar from '@/components/TipJar';
 import SearchModal from '@/components/SearchModal';
 import Newsletter from '@/components/Newsletter';
 import StickyBookingCTA from '@/components/StickyBookingCTA';
+import AudioPlayer from '@/components/AudioPlayer';
 
 export default function App() {
   const [legalDoc, setLegalDoc] = useState<LegalDoc>(null);
@@ -46,6 +47,7 @@ export default function App() {
       <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} onOpenConsent={openConsent} />
       <TipJar open={tipOpen} onClose={() => setTipOpen(false)} />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} onOpenLegal={setLegalDoc} onOpenTip={() => setTipOpen(true)} />
+      <AudioPlayer />
       <CookieConsent onOpenPolicy={() => setLegalDoc('cookies')} />
     </div>
   );

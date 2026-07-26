@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Instagram, Link as LinkIcon, Music, MapPin, Calendar, Mic } from 'lucide-react';
+import { Instagram, Youtube, Link as LinkIcon, Music, MapPin, Calendar, Mic } from 'lucide-react';
 import { LINKS } from '../data';
 import aboutImage from '../assets/images/regenerated_image_1781019033978.jpg';
 
@@ -61,7 +61,7 @@ export default function AboutSection() {
               <Fact icon={<Calendar size={14} />} label="Active Since" value="2023" />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-baseline sm:items-center gap-6 mt-10">
+            <div className="flex flex-col sm:flex-row items-baseline sm:items-center gap-6 mt-10 flex-wrap">
               <a
                 href={LINKS.instagram}
                 target="_blank"
@@ -69,7 +69,16 @@ export default function AboutSection() {
                 className="flex items-center gap-3 transition-all duration-300 hover:text-accent text-[13px] tracking-wide uppercase font-semibold text-text-muted hover:translate-x-1"
               >
                 <Instagram size={16} />
-                @zacharywalkermusic
+                Instagram
+              </a>
+              <a
+                href={LINKS.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 transition-all duration-300 hover:text-accent text-[13px] tracking-wide uppercase font-semibold text-text-muted hover:translate-x-1"
+              >
+                <Youtube size={16} />
+                YouTube
               </a>
               <a
                 href={LINKS.facebookMusicPage}
@@ -78,13 +87,13 @@ export default function AboutSection() {
                 className="flex items-center gap-3 transition-all duration-300 hover:text-accent text-[13px] tracking-wide uppercase font-semibold text-text-muted hover:translate-x-1"
               >
                 <LinkIcon size={16} />
-                Facebook Music Page
+                Facebook
               </a>
               <a
                 href="#booking"
-                className="ml-auto inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-accent font-semibold hover:gap-3 transition-all duration-300"
+                className="sm:ml-auto inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-accent font-semibold hover:gap-3 transition-all duration-300"
               >
-                Book a Show -&gt;
+                Book a Show →
               </a>
             </div>
           </div>
