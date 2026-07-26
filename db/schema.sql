@@ -1,10 +1,7 @@
 -- Live schema for the Supabase project backing this site.
 --
 -- This mirrors what is actually deployed and is the reference for the payloads
--- in server/routes.ts. The previous db/migrations/001_init.sql had drifted from
--- production (integer consent flags, missing ip/user_agent columns), which made
--- every contact, booking, and consent submission fail. Keep this file in sync
--- when you change the tables.
+-- in server/routes.ts. Keep this file in sync when you change the tables.
 --
 -- Applied against Supabase, not via a local DATABASE_URL. Run through the
 -- Supabase SQL editor or the MCP `apply_migration` tool.
@@ -67,9 +64,46 @@ create table if not exists public.consent_log (
 );
 
 -- The server authenticates with the service role key, which bypasses RLS.
--- These policies exist so that a leaked publishable key cannot read the data:
--- inserts are permitted, reads are denied outright.
+-- These policies exist so that a leaked publishable/anon key cannot read data:
+-- inserts are permitted, reads are denied.
 alter table public.subscribers      enable row level security;
 alter table public.contact_messages enable row level security;
 alter table public.bookings         enable row level security;
 alter table public.consent_log      enable row level security;
+
+-- Drop existing policies if re-running this file so the statements are idempotent.
+drop policy if exists "subscribers_insert" on public.subscribers;
+drop policy if exists "subscribers_select_deny" on public.subscribers;
+drop policy if exists "contact_insert" on public.contact_messages;
+drop policy if exists "contact_select_deny" on public.contact_messages;
+drop policy if exists "bookings_insert" on public.bookings;
+drop policy if exists "bookings_select_deny" on public.bookings;
+drop policy if exists "consent_insert" on public.consent_log;
+drop policy if exists "consent_select_deny" on public.consent_log;
+
+-- Allow inserts from the public role (anon key). The live API uses the service
+-- role, but these policies still protect against a leaked publishable key.
+create policy "subscribers_insert" on public.subscribers
+  for insert to public with check (true);
+
+create policy "contact_insert" on public.contact_messages
+  for insert to public with check (true);
+
+create policy "bookings_insert" on public.bookings
+  for insert to public with check (true);
+
+create policy "consent_insert" on public.consent_log
+  for insert to public with check (true);
+
+-- Explicitly deny all selects for the public role. Service role bypasses RLS.
+create policy "subscribers_select_deny" on public.subscribers
+  for select to public using (false);
+
+create policy "contact_select_deny" on public.contact_messages
+  for select to public using (false);
+
+create policy "bookings_select_deny" on public.bookings
+  for select to public using (false);
+
+create policy "consent_select_deny" on public.consent_log
+  for select to public using (false);
