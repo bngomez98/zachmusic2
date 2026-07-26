@@ -1,14 +1,22 @@
 # Render blueprint for the persistent server.
 #
-# Deploy: Render Dashboard -> New -> Blueprint -> point at this repo.
-# Secrets are marked sync:false so they are never committed here; set their
-# values once in the Render dashboard.
+# Deploy: Render Dashboard → New → Blueprint → point at this repo.
+#
+# After first deploy, set the secrets below in:
+#   Dashboard → zacharywalkermusic → Environment
+# Then Manual Deploy so they take effect.
+#
+# Required for newsletter / booking / contact:
+#   SUPABASE_SERVICE_ROLE_KEY  = service_role secret from Supabase
+# Optional for welcome emails:
+#   GMAIL_APP_PASSWORD
+#   ADMIN_SECRET
 
 services:
   - type: web
     name: zacharywalkermusic
     runtime: node
-    plan: starter # Free instances sleep when idle, which defeats the point of a persistent server.
+    plan: starter # Free instances sleep when idle — defeats a persistent server.
     region: ohio
     branch: main
 
@@ -27,16 +35,18 @@ services:
       - key: NODE_VERSION
         value: "22"
 
-      # Database (Supabase REST). Required — the API returns 503 without these.
+      # Public project URL — safe to commit. With or without /rest/v1.
       - key: SUPABASE_URL
-        sync: false
+        value: https://fsxcqohqvuvapbmfcvnu.supabase.co
+
+      # REQUIRED secret. Supabase → Project Settings → API → service_role.
+      # Do NOT put the anon key here or the newsletter will fail.
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
 
-      # Outbound email over Gmail SMTP. Optional: signup still records without
-      # them, the welcome email is just skipped.
+      # Outbound email. Optional: signups still save without these.
       - key: GMAIL_USER
-        sync: false
+        value: mgmt@zacharywalkermusic.com
       - key: GMAIL_APP_PASSWORD
         sync: false
 
