@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-server
+.prerender
+.git
+.gitignore
+.env
+.env.*
+*.log
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+.vercel

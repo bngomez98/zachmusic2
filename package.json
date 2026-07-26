@@ -3,8 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "music aistudio",
+  "description": "Official site for Zachary Walker — singer-songwriter",
   "homepage": "https://zacharywalkermusic.com",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server.ts",
     "build": "npm run build:client && npm run build:ssr && npm run prerender && npm run build:server",
