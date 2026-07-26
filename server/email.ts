@@ -44,7 +44,7 @@ export function buildWelcomeHtml(displayName: string): string {
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto">
   <tr>
     <td align="center" style="padding-right:12px">
-      <a href="${SITE_URL}/#shows" style="display:inline-block;background-color:${ACCENT};color:#0A0A0A;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;text-decoration:none;padding:12px 24px;border-radius:4px">Upcoming Shows</a>
+      <a href="${SITE_URL}/shows" style="display:inline-block;background-color:${ACCENT};color:#0A0A0A;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;text-decoration:none;padding:12px 24px;border-radius:4px">Upcoming Shows</a>
     </td>
     <td align="center">
       <a href="https://instagram.com/zacharywalkermusic" style="display:inline-block;background-color:transparent;color:${ACCENT};font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;text-decoration:none;padding:12px 24px;border-radius:4px;border:1px solid ${ACCENT}">Instagram</a>
