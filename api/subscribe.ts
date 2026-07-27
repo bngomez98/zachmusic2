@@ -57,33 +57,55 @@ function buildWelcomeHtml(displayName: string): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Validate request method
   if (!requirePost(req, res)) return;
+
+  // Validate Supabase configuration
   if (!requireSupabase(res)) return;
 
+  // Validate and parse email
   const email = readEmail(req.body?.email);
-  if (!email) return res.status(400).json({ error: 'Valid email is required' });
+  if (!email) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
 
+  // Parse optional fields
   const name = readText(req.body?.name);
   const source = readText(req.body?.source) || 'newsletter-hero';
   const { ip, userAgent } = requestMeta(req);
 
   try {
-    const result = await supabaseInsert(
-      'subscribers',
-      { name, email, source, ip, user_agent: userAgent },
-      { onConflict: 'email', ignoreDuplicates: true, returning: 'representation' },
-    );
+    // Attempt to insert into subscribers table
+    // - onConflict: 'email' handles duplicates gracefully
+    // - ignoreDuplicates: true means we don't count it as an error
+    // - returning: 'representation' tells us if the row was actually inserted
+    const result = await supabaseInsert('subscribers', {
+      name,
+      email,
+      source,
+      ip,
+      user_agent: userAgent,
+    });
 
     if (!result.ok) {
       const { status, detail } = result as { ok: false; status: number; detail: string };
-      console.error('[subscribe] supabase insert failed:', status, detail);
-      return res.status(502).json({ error: 'Failed to subscribe' });
+      console.error('[subscribe]', { status, detail, email });
+
+      // Distinguish between client errors and server errors
+      if (status === 409) {
+        // Conflict: email already exists
+        return res.status(200).json({ message: 'Already subscribed' });
+      }
+
+      return res.status(502).json({ error: 'Unable to subscribe. Please try again.' });
     }
 
+    // Check if row was actually inserted (empty result = already existed)
     if (result.rows.length === 0) {
       return res.status(200).json({ message: 'Already subscribed' });
     }
 
+    // Send welcome email asynchronously (don't block response on email failure)
     const mailer = createMailer();
     if (mailer) {
       mailer
@@ -93,12 +115,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           subject: 'Welcome to the list ✦',
           html: buildWelcomeHtml(name ? esc(name) : 'there'),
         })
-        .catch((err: unknown) => console.error('[subscribe] welcome email failed:', err));
+        .catch((err: unknown) => {
+          console.error('[subscribe] email failed:', { email, error: String(err) });
+        });
+    } else {
+      console.warn('[subscribe] email not configured (GMAIL_USER or GMAIL_APP_PASSWORD missing)');
     }
 
     return res.status(201).json({ message: 'Successfully subscribed' });
   } catch (err) {
-    console.error('[subscribe] error:', err);
-    return res.status(500).json({ error: 'Failed to subscribe' });
+    console.error('[subscribe] exception:', { email, error: String(err) });
+    return res.status(500).json({ error: 'An unexpected error occurred. Please try again.' });
   }
 }

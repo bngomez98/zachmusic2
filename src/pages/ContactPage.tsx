@@ -11,7 +11,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { LINKS } from '@/data';
-import { isEmail, submitContact } from '@/lib/supabase';
+import { isEmail, submitContact, subscribeNewsletter } from '@/lib/supabase';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -26,52 +26,83 @@ export default function ContactPage() {
 
   const onContact = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate email
     if (!isEmail(email)) {
-      setErrMsg('Please enter a valid email.');
+      setErrMsg('Please enter a valid email address.');
       setStatus('error');
       return;
     }
+
+    // Validate message
     if (!message.trim()) {
       setErrMsg('Please include a message.');
       setStatus('error');
       return;
     }
+
+    // Prevent double submission
+    if (status === 'sending') return;
+
     setStatus('sending');
     setErrMsg('');
+
     try {
-      await submitContact({ name: name.trim() || undefined, email, message });
+      await submitContact({
+        name: name.trim() || undefined,
+        email: email.trim().toLowerCase(),
+        message: message.trim(),
+      });
+
       setStatus('success');
+
+      // Clear inputs
       setName('');
       setEmail('');
       setMessage('');
+
+      // Auto-reset after 5 seconds
+      setTimeout(() => setStatus('idle'), 5000);
     } catch (err) {
       setStatus('error');
-      setErrMsg(err instanceof Error ? err.message : 'Something went wrong.');
+      setErrMsg(err instanceof Error ? err.message : 'Unable to send message. Please try again.');
     }
   };
 
   const onSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nlEmail.trim()) return;
+
+    // Validate email
+    if (!isEmail(nlEmail)) {
+      setNlErr('Please enter a valid email address.');
+      setNlStatus('error');
+      return;
+    }
+
+    // Prevent double submission
+    if (nlStatus === 'loading') return;
+
     setNlStatus('loading');
     setNlErr('');
+
     try {
-      const resp = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nlName.trim() || undefined, email: nlEmail.trim(), source: 'contact-page' }),
+      const result = await subscribeNewsletter({
+        name: nlName.trim() || undefined,
+        email: nlEmail.trim().toLowerCase(),
+        source: 'contact-page',
       });
-      const data = await resp.json().catch(() => ({}));
-      if (resp.ok) {
-        setNlStatus('success');
-        setNlName('');
-        setNlEmail('');
-        return;
-      }
-      throw new Error(data?.error || 'Subscription failed.');
+
+      setNlStatus('success');
+
+      // Clear inputs
+      setNlName('');
+      setNlEmail('');
+
+      // Auto-reset after 4 seconds
+      setTimeout(() => setNlStatus('idle'), 4000);
     } catch (err) {
       setNlStatus('error');
-      setNlErr(err instanceof Error ? err.message : 'Subscription failed.');
+      setNlErr(err instanceof Error ? err.message : 'Unable to subscribe. Please try again.');
     }
   };
 

@@ -10,20 +10,35 @@ export default function Newsletter() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate email before submission
     if (!isEmail(email)) {
       setErrMsg('Please enter a valid email address.');
       setStatus('error');
       return;
     }
+
+    // Prevent double submission
+    if (status === 'sending') return;
+
     setStatus('sending');
     setErrMsg('');
+
     try {
       const result = await subscribeNewsletter({ email, source: 'newsletter-hero' });
-      setStatus(result.alreadySubscribed ? 'already' : 'success');
-      if (!result.alreadySubscribed) setEmail('');
+
+      if (result.alreadySubscribed) {
+        setStatus('already');
+      } else {
+        setStatus('success');
+        // Clear the input on successful new subscription
+        setEmail('');
+        // Auto-reset after 5 seconds to allow another subscription attempt
+        setTimeout(() => setStatus('idle'), 5000);
+      }
     } catch (err) {
       setStatus('error');
-      setErrMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setErrMsg(err instanceof Error ? err.message : 'Unable to subscribe. Please try again.');
     }
   };
 

@@ -19,21 +19,43 @@ export default function Footer({ onOpenLegal, onOpenConsent, onOpenTip }: Props)
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEmail(email)) return;
+
+    // Validate email
+    if (!isEmail(email)) {
+      setErrMsg('Please enter a valid email address.');
+      setStatus('error');
+      return;
+    }
+
+    // Prevent double submission
+    if (status === 'loading') return;
+
     setStatus('loading');
     setErrMsg('');
 
     try {
-      const result = await subscribeNewsletter({ name: name.trim() || undefined, email, source: 'footer' });
+      const result = await subscribeNewsletter({
+        name: name.trim() || undefined,
+        email: email.trim().toLowerCase(),
+        source: 'footer',
+      });
+
       setStatus('success');
+
+      // Send analytics event only for new subscriptions
       if (!result.alreadySubscribed && typeof (window as any).gtag === 'function') {
         (window as any).gtag('event', 'newsletter_signup', { source: 'footer' });
       }
+
+      // Clear inputs on success
       setName('');
       setEmail('');
+
+      // Auto-reset after 4 seconds
+      setTimeout(() => setStatus('idle'), 4000);
     } catch (err) {
       setStatus('error');
-      setErrMsg(err instanceof Error ? err.message : 'Submission failed. Please try again.');
+      setErrMsg(err instanceof Error ? err.message : 'Unable to subscribe. Please try again.');
     }
   };
 
