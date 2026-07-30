@@ -24,6 +24,14 @@ create table if not exists public.subscribers (
 create unique index if not exists subscribers_email_key
   on public.subscribers (email);
 
+-- Index for tracking signup sources
+create index if not exists subscribers_source_idx
+  on public.subscribers (source);
+
+-- Index for created_at for time-based queries
+create index if not exists subscribers_created_at_idx
+  on public.subscribers (created_at);
+
 create table if not exists public.contact_messages (
   id          uuid primary key default gen_random_uuid(),
   created_at  timestamptz default now(),
@@ -52,6 +60,14 @@ create table if not exists public.bookings (
   status      text default 'new'
 );
 
+-- Index for bookings by status
+create index if not exists bookings_status_idx
+  on public.bookings (status);
+
+-- Index for bookings by date
+create index if not exists bookings_created_at_idx
+  on public.bookings (created_at);
+
 create table if not exists public.consent_log (
   id          uuid primary key default gen_random_uuid(),
   created_at  timestamptz default now(),
@@ -62,6 +78,10 @@ create table if not exists public.consent_log (
   ip          text,
   user_agent  text
 );
+
+-- Index for consent log lookups
+create index if not exists consent_log_fingerprint_idx
+  on public.consent_log (fingerprint);
 
 -- The server authenticates with the service role key, which bypasses RLS.
 -- These policies exist so that a leaked publishable/anon key cannot read data:

@@ -39,6 +39,7 @@ npm run dev      # Vite middleware + HMR on http://localhost:3000
 npm run build    # client -> SSR bundle -> prerender -> server bundle
 npm start        # run the production build
 npm run lint     # tsc --noEmit
+npm run clean    # remove build artifacts
 ```
 
 ## Environment variables
@@ -58,7 +59,7 @@ email is skipped.
 
 The key must be the **service role** key, not the publishable/anon one.
 `/api/subscribe` reads back the inserted row to distinguish a new signup from a
-duplicate, and the `Deny anon select` RLS policy blocks that read for anon keys —
+duplicate, and the `Deny anon select` RLS policy blocks that read for anon keys 
 which would make every signup look like a duplicate and suppress welcome emails.
 
 ## Deployment
@@ -71,7 +72,7 @@ docker build -t zacharywalkermusic .
 docker run -p 3000:3000 --env-file .env zacharywalkermusic
 ```
 
-Use a plan that does **not** sleep when idle — an instance that spins down on
+Use a plan that does **not** sleep when idle  an instance that spins down on
 idle reintroduces the cold starts this architecture exists to avoid.
 
 `GET /healthz` returns `200` when Supabase is configured and `503` otherwise,
@@ -88,7 +89,24 @@ All routes accept and return JSON. Rate limits are per IP, per minute.
 | `POST /api/contact` | 6 | |
 | `POST /api/consent` | 20 | Boolean consent flags |
 | `POST /api/welcome-email` | 10 | Requires `Authorization: Bearer $ADMIN_SECRET` |
-| `GET /healthz` | — | |
+| `GET /healthz` |  | |
+
+## Newsletter
+
+The newsletter system is fully functional:
+- Users can subscribe via the Newsletter component on the homepage
+- Welcome emails are automatically sent to new subscribers
+- Subscriber data is stored in Supabase with source tracking
+- Duplicate subscriptions are prevented via unique email constraint
+- Rate limiting prevents abuse (8 requests/minute per IP)
+
+### Welcome Email
+
+The welcome email includes:
+- Personalized greeting with the subscriber's name
+- Information about what to expect (shows, releases, updates)
+- Links to upcoming shows and social media
+- Clear unsubscribe instructions
 
 ## Database
 
@@ -97,6 +115,30 @@ change. Two constraints the code depends on:
 
 - `subscribers.email` needs a unique index on the **bare column**. PostgREST
   resolves `on_conflict=email` against it, and an expression index such as
-  `lower(email)` does not match — it raises `42P10`.
+  `lower(email)` does not match  it raises `42P10`.
 - `consent_log.analytics` / `.marketing` are **booleans**. Sending `1`/`0`
   fails.
+
+## Project Structure
+
+```
+.
+├── src/
+│   ├── components/     # React components (Newsletter, Footer, etc.)
+│   ├── pages/          # Page components
+│   ├── lib/            # Client-side utilities (supabase.ts)
+│   ├── App.tsx         # Main app with routing
+│   └── entry-server.tsx # SSR entry point
+├── server/
+│   ├── routes.ts       # API route handlers
+│   ├── email.ts        # Email templates and sending
+│   └── lib.ts          # Server utilities
+├── db/
+│   └── schema.sql      # Database schema
+├── public/            # Static assets
+├── scripts/
+│   └── prerender.js    # Prerender script
+├── server.ts          # Express server entry
+├── index.html          # HTML template
+└── package.json        # Dependencies and scripts
+```

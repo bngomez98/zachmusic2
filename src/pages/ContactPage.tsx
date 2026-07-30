@@ -11,7 +11,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { LINKS } from '@/data';
-import { isEmail, submitContact } from '@/lib/supabase';
+import { isEmail, submitContact, subscribeNewsletter } from '@/lib/supabase';
 
 export default function ContactPage() {
   const [name, setName] = useState('');
@@ -56,19 +56,14 @@ export default function ContactPage() {
     setNlStatus('loading');
     setNlErr('');
     try {
-      const resp = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nlName.trim() || undefined, email: nlEmail.trim(), source: 'contact-page' }),
+      await subscribeNewsletter({ 
+        email: nlEmail.trim(), 
+        name: nlName.trim() || undefined,
+        source: 'contact-page' 
       });
-      const data = await resp.json().catch(() => ({}));
-      if (resp.ok) {
-        setNlStatus('success');
-        setNlName('');
-        setNlEmail('');
-        return;
-      }
-      throw new Error(data?.error || 'Subscription failed.');
+      setNlStatus('success');
+      setNlName('');
+      setNlEmail('');
     } catch (err) {
       setNlStatus('error');
       setNlErr(err instanceof Error ? err.message : 'Subscription failed.');
@@ -104,9 +99,9 @@ export default function ContactPage() {
               <div className="bg-surface/60 border border-accent/30 rounded-2xl p-12 text-center">
                 <CheckCircle size={40} className="text-accent mx-auto mb-4" />
                 <h3 className="font-display text-2xl text-text-main mb-2">Message sent</h3>
-                <p className="text-text-muted text-sm">Thanks for reaching out — I'll get back to you soon.</p>
+                <p className="text-text-muted text-sm">Thanks for reaching out  I'll get back to you soon.</p>
                 <button onClick={() => setStatus('idle')} className="mt-6 text-xs uppercase tracking-widest text-text-muted hover:text-accent transition-colors">
-                  Send another →
+                  Send another 
                 </button>
               </div>
             ) : (
@@ -235,7 +230,7 @@ export default function ContactPage() {
                 href="/booking"
                 className="inline-flex items-center gap-2 text-accent text-xs uppercase tracking-[0.2em] font-semibold hover:gap-3 transition-all"
               >
-                <Send size={14} /> Go to Booking Form →
+                <Send size={14} /> Go to Booking Form 
               </a>
             </div>
           </motion.div>

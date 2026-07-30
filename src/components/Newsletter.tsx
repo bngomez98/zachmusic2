@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mail, Loader2, CheckCircle, AlertCircle, User } from 'lucide-react';
 import { subscribeNewsletter, isEmail } from '../lib/supabase';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'already' | 'error'>('idle');
   const [errMsg, setErrMsg] = useState('');
 
@@ -18,14 +19,24 @@ export default function Newsletter() {
     setStatus('sending');
     setErrMsg('');
     try {
-      const result = await subscribeNewsletter({ email, source: 'newsletter-hero' });
+      const result = await subscribeNewsletter({ 
+        email, 
+        name: name.trim() || undefined,
+        source: 'newsletter-hero' 
+      });
       setStatus(result.alreadySubscribed ? 'already' : 'success');
-      if (!result.alreadySubscribed) setEmail('');
+      if (!result.alreadySubscribed) {
+        setEmail('');
+        setName('');
+      }
     } catch (err) {
       setStatus('error');
       setErrMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   };
+
+  const isSubmitting = status === 'sending';
+  const showSuccess = status === 'success' || status === 'already';
 
   return (
     <section className="bg-base py-14 relative overflow-hidden border-t border-text-muted/10">
@@ -50,23 +61,14 @@ export default function Newsletter() {
             Upcoming show dates, new music, and occasional updates. Unsubscribe anytime.
           </p>
 
-          {status === 'success' ? (
+          {showSuccess ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               className="flex items-center justify-center gap-2 text-accent text-sm"
             >
               <CheckCircle size={18} />
-              <span>Subscribed — check your inbox.</span>
-            </motion.div>
-          ) : status === 'already' ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center justify-center gap-2 text-accent text-sm"
-            >
-              <CheckCircle size={18} />
-              <span>Already subscribed.</span>
+              <span>{status === 'already' ? 'Already subscribed.' : 'Subscribed  check your inbox.'}</span>
             </motion.div>
           ) : (
             <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
@@ -83,14 +85,15 @@ export default function Newsletter() {
                   autoComplete="email"
                   aria-label="Email address"
                   className="w-full bg-surface/80 border border-white/5 rounded-md pl-11 pr-4 py-3.5 text-sm text-text-main placeholder-text-muted/40 focus:border-accent/60 focus:outline-none transition-colors"
+                  required
                 />
               </div>
               <button
                 type="submit"
-                disabled={status === 'sending'}
+                disabled={isSubmitting}
                 className="inline-flex items-center justify-center gap-2 bg-accent text-base px-6 py-3.5 font-semibold text-sm uppercase tracking-widest rounded-md hover:bg-accent/90 disabled:opacity-60 transition-colors whitespace-nowrap"
               >
-                {status === 'sending' ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 size={16} className="animate-spin" /> Subscribing...
                   </>

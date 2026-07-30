@@ -7,6 +7,8 @@ import { env, esc } from './lib.js';
 const SITE_URL = 'https://zacharywalkermusic.com';
 const ACCENT = '#D4A853';
 const INSTAGRAM = 'https://www.instagram.com/za.chary5068/';
+const FACEBOOK = 'https://www.facebook.com/profile.php?id=61565838372447';
+const YOUTUBE = 'https://www.youtube.com/@fullmetalzcw';
 
 /** Returns null when SMTP credentials are absent, so callers can skip sending. */
 export function createMailer(): Transporter | null {
@@ -38,8 +40,8 @@ export function buildWelcomeHtml(displayName: string): string {
 
 <tr><td style="background-color:#111111;border-radius:8px;padding:36px 32px;border:1px solid rgba(255,255,255,0.06)">
   <p style="margin:0 0 20px;font-size:18px;color:#FFFFFF;line-height:1.5">Hey ${displayName},</p>
-  <p style="margin:0 0 16px;font-size:15px;color:#CCCCCC;line-height:1.7">Thanks for joining the list. You'll be the first to know about upcoming shows, new recordings, and anything else worth sharing.</p>
-  <p style="margin:0 0 16px;font-size:15px;color:#CCCCCC;line-height:1.7">I keep things simple — no spam, no clutter. Just honest updates when there's something worth telling you about.</p>
+  <p style="margin:0 0 16px;font-size:15px;color:#CCCCCC;line-height:1.7">Thanks for joining the list! You'll be the first to know about upcoming shows, new recordings, and anything else worth sharing.</p>
+  <p style="margin:0 0 16px;font-size:15px;color:#CCCCCC;line-height:1.7">I keep things simple  no spam, no clutter. Just honest updates when there's something worth telling you about.</p>
   <p style="margin:0 0 28px;font-size:15px;color:#CCCCCC;line-height:1.7">In the meantime, here's where you can find me:</p>
 
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto">
@@ -53,7 +55,7 @@ export function buildWelcomeHtml(displayName: string): string {
   </tr>
   </table>
 
-  <p style="margin:32px 0 0;font-size:15px;color:#CCCCCC;line-height:1.5">— Zachary Walker</p>
+  <p style="margin:32px 0 0;font-size:15px;color:#CCCCCC;line-height:1.5"> Zachary Walker</p>
 </td></tr>
 
 <tr><td align="center" style="padding:24px 0">
@@ -71,14 +73,14 @@ export function buildWelcomeHtml(displayName: string): string {
 export async function sendWelcomeEmail(to: string, name: string | null): Promise<void> {
   const mailer = createMailer();
   if (!mailer) {
-    console.warn('[mail] GMAIL_USER/GMAIL_APP_PASSWORD unset — skipping welcome email');
+    console.warn('[mail] GMAIL_USER/GMAIL_APP_PASSWORD unset  skipping welcome email');
     return;
   }
 
   await mailer.sendMail({
     from: `Zachary Walker <${env.gmailUser()}>`,
     to,
-    subject: 'Welcome to the list ✦',
+    subject: 'Welcome to the list  Zachary Walker Music',
     html: buildWelcomeHtml(name ? esc(name) : 'there'),
   });
 }
@@ -104,13 +106,13 @@ export interface BookingDetails {
 export async function sendBookingEmails(booking: BookingDetails): Promise<void> {
   const mailer = createMailer();
   if (!mailer) {
-    console.warn('[mail] GMAIL_USER/GMAIL_APP_PASSWORD unset — skipping booking emails');
+    console.warn('[mail] GMAIL_USER/GMAIL_APP_PASSWORD unset  skipping booking emails');
     return;
   }
 
   const from = env.gmailUser();
   const name = esc(booking.name);
-  const dash = '—';
+  const dash = '';
 
   const rows: [string, string][] = [
     ['Name', name],
@@ -137,7 +139,7 @@ export async function sendBookingEmails(booking: BookingDetails): Promise<void> 
       from: `Zachary Walker Bookings <${from}>`,
       to: from,
       replyTo: booking.email,
-      subject: `New Booking Inquiry — ${booking.name}`,
+      subject: `New Booking Inquiry  ${booking.name}`,
       html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#111;border-radius:8px;padding:32px;border:1px solid rgba(255,255,255,0.06)">
 <h2 style="margin:0 0 20px;color:#FFFFFF;font-size:20px">New Booking Inquiry</h2>
 <table style="border-collapse:collapse;width:100%">${table}</table>
@@ -152,7 +154,7 @@ export async function sendBookingEmails(booking: BookingDetails): Promise<void> 
   const eventLine = [booking.eventDate, booking.eventType]
     .filter((value): value is string => Boolean(value))
     .map(esc)
-    .join(' — ');
+    .join('  ');
 
   try {
     await mailer.sendMail({
@@ -163,7 +165,7 @@ export async function sendBookingEmails(booking: BookingDetails): Promise<void> 
 <p style="color:#FFFFFF;font-size:16px;margin:0 0 16px">Hi ${name},</p>
 <p style="color:#CCCCCC;font-size:15px;line-height:1.7;margin:0 0 16px">Thanks for your booking inquiry. I'll personally review the details and reply within 48 hours.</p>
 ${eventLine ? `<p style="color:#CCCCCC;font-size:15px;line-height:1.7;margin:0 0 16px">Event: ${eventLine}</p>` : ''}
-<p style="color:#CCCCCC;font-size:15px;margin:24px 0 0">— Zachary Walker</p>
+<p style="color:#CCCCCC;font-size:15px;margin:24px 0 0"> Zachary Walker</p>
 </div>`,
     });
   } catch (err) {
